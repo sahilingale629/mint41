@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./login.css";
+import "./IntLogin.css";
 
-const Login = () => {
+const IntLogin = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -18,7 +18,7 @@ const Login = () => {
     const data = { username, password };
 
     try {
-      const response = await fetch("http://localhost:5007/api/data", {
+      const response = await fetch("http://localhost:5007/api/intlogin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -79,4 +79,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default IntLogin;

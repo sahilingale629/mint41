@@ -1,5 +1,7 @@
-username,password,clientId,appId,vendorName,state
-A0012,Pass@123,tbsenterpriseweb,1,MintMaster,Mint
-M5008,Jan@2024,tbsenterpriseweb,1,MintMaster,Mint
-M5006,Oct@2025,tbsenterpriseweb,1,MintMaster,Mint
+username,password
+A0011,Dec@2024
+A0012,Pass@123
+M5008,Jan@2024
+M5006,Oct@2025
+
 

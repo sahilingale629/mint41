@@ -9,6 +9,8 @@ const fs = require("fs"); // Import the fs module
 const { SmartAPI, WebSocketV2 } = require("smartapi-javascript");
 const WebSocket = require("ws");
 const axios = require("axios");
+const csvParser = require("csv-parser");
+const crypto = require("crypto");
 
 const app = express();
 const port = 5007;
@@ -73,6 +75,17 @@ app.post("/api/data", async (req, res) => {
       message: "An error occurred during login",
       error: error.message,
     });
+  }
+});
+
+app.post("/api/intlogin", (req, res) => {
+  const { username, password } = req.body;
+
+  // Check the credentials
+  if (username === "mint" && password === "123") {
+    return res.status(200).json({ message: "Login successful" });
+  } else {
+    return res.status(401).json({ message: "Invalid username or password" });
   }
 });
 
@@ -149,71 +162,183 @@ app.post("/connect-aliceblue", async (req, res) => {
   }
 });
 
-app.post("/login-all-clients", async (req, res) => {
-  const filePath = path.join(__dirname, "clients.csv"); // Path to the CSV file
+// Encryption/Decryption Utility
+class TBSAlgoEncryptDecrypt {
+  static ALGORITHM = "aes-256-gcm";
+  static GCM_IV_LENGTH = 12;
+  static GCM_TAG_LENGTH = 16;
 
-  try {
-    // Read the CSV file
-    const fileContent = fs.readFileSync(filePath, "utf8");
-
-    // Parse the CSV content
-    const parsedData = Papa.parse(fileContent, {
-      header: true, // Read the CSV header
-      skipEmptyLines: true, // Ignore empty lines
-    });
-
-    // Check for parsing errors
-    if (parsedData.errors.length > 0) {
-      throw new Error(`CSV parsing error: ${parsedData.errors[0].message}`);
-    }
-
-    const clients = parsedData.data; // Array of client objects from CSV
-
-    // Simulate login for each client
-    const loginResults = await Promise.all(
-      clients.map(async (client) => {
-        const { username, password } = client;
-        console.log(`Logging in with payload: username=${username}, password=${password}`);
-
-        try {
-          // Log the payload (username and password) before calling the login function
-          console.log(`Logging in with payload: username=${username}, password=${password}`);
-
-          // Call the login function
-          const loginResponse = await login(username, password);
-
-          // Check if login was successful
-          if (loginResponse.status === "success") {
-            return {
-              username,
-              status: "Success",
-              data: loginResponse.data,
-            };
-          } else {
-            return {
-              username,
-              status: "Failed",
-              message: loginResponse.message || "Login unsuccessful",
-            };
-          }
-        } catch (error) {
-          return {
-            username,
-            status: "Error",
-            message: error.message,
-          };
-        }
-      })
+  static gcmDecrypt(encryptedData, secretKey) {
+    const encryptedBuffer = Buffer.from(encryptedData, "base64");
+    const iv = encryptedBuffer.slice(0, this.GCM_IV_LENGTH);
+    const ciphertext = encryptedBuffer.slice(
+      this.GCM_IV_LENGTH,
+      encryptedBuffer.length - this.GCM_TAG_LENGTH
     );
+    const authTag = encryptedBuffer.slice(
+      encryptedBuffer.length - this.GCM_TAG_LENGTH
+    );
+    const decipher = crypto.createDecipheriv(
+      this.ALGORITHM,
+      Buffer.from(secretKey, "base64"),
+      iv
+    );
+    decipher.setAuthTag(authTag);
 
-    // Respond with the login results
-    res.status(200).json({ success: true, clients: loginResults });
-  } catch (error) {
-    console.error("Error logging in clients:", error.message);
-    res.status(500).json({ success: false, error: "Failed to log in clients" });
+    try {
+      let decrypted = decipher.update(ciphertext, null, "utf8");
+      decrypted += decipher.final("utf8");
+      return decrypted;
+    } catch (error) {
+      console.error("Decryption failed:", error.message);
+      throw error;
+    }
   }
+}
+
+// URLs and Configuration
+const urls = {
+  login: "https://uat-api-algo.tradebulls.in/ms-algo-trading-authservice/login",
+  sendOtp:
+    "https://uat-api-algo.tradebulls.in/ms-algo-trading-authservice/sendOtp",
+  verifyTotp:
+    "https://uat-api-algo.tradebulls.in/ms-algo-trading-authservice/login2faTotp",
+  customerProfile:
+    "https://uat-api-algo.tradebulls.in/ms-trading-customer-profile/loggedinuser/profiledetails",
+};
+
+const getHeaders = () => ({
+  "request-info":
+    '{"rit":"123","cver":"1.0v","ch":"WEB","info":{},"reqts":"12345678","payload":[]}',
+  "x-api-key": "E6J9HA1BA31EJK90IK12KL80BBRRN590",
+  "Content-Type": "application/json",
 });
 
+const secretKey = "id+qipZHEPff/jNJPlyjKObYKcM+JWqzYFGGGzJh+mc=";
+
+// CSV Reader Function
+const readClientsFromCSV = async (filePath) => {
+  return new Promise((resolve, reject) => {
+    const clients = [];
+    fs.createReadStream(filePath)
+      .pipe(csvParser())
+      .on("data", (row) => {
+        if (row.username && row.password) {
+          clients.push(row);
+        } else {
+          console.warn(`Skipping invalid row: ${JSON.stringify(row)}`);
+        }
+      })
+      .on("end", () => resolve(clients))
+      .on("error", (err) => reject(err));
+  });
+};
+
+// Client Processing Function
+const processClient = async (client) => {
+  const { username, password } = client;
+  console.log(`Processing client: ${username}`);
+
+  let loginToken = null;
+  let otpToken = null;
+  const headers = getHeaders();
+
+  try {
+    const loginResponse = await axios.post(
+      urls.login,
+      {
+        username,
+        password,
+        clientId: "tbsenterpriseweb",
+        appId: "1",
+        vendorName: "MintMaster",
+        state: "Mint",
+      },
+      { headers }
+    );
+
+    loginToken = loginResponse.data?.data?.success?.logintoken;
+    if (!loginToken) throw new Error("Login token not found.");
+
+    console.log(`Login Token for ${username}: ${loginToken}`);
+
+    const otpResponse = await axios.post(
+      urls.sendOtp,
+      { payload: [{ logintoken: loginToken, product: "OTP2FA" }] },
+      { headers }
+    );
+
+    otpToken = otpResponse.data?.data?.success?.otpToken;
+    if (!otpToken) throw new Error("OTP token not found.");
+
+    console.log(`OTP Token for ${username}: ${otpToken}`);
+
+    const otpCode = 123456;
+    console.log(`Using OTP Code for ${username}: ${otpCode}`);
+
+    const totpResponse = await axios.post(
+      urls.verifyTotp,
+      { payload: [{ logintoken: loginToken, otp: otpCode, authFlag: "0" }] },
+      { headers }
+    );
+
+    const encryptedAccessToken = totpResponse.data?.data?.success?.access_token;
+    if (!encryptedAccessToken)
+      throw new Error("Encrypted access token not found.");
+
+    console.log(
+      `Encrypted Access Token for ${username}: ${encryptedAccessToken}`
+    );
+
+    const decryptedAccessToken = TBSAlgoEncryptDecrypt.gcmDecrypt(
+      encryptedAccessToken,
+      secretKey
+    );
+
+    headers.Authorization = `Bearer ${decryptedAccessToken}`;
+    const profileResponse = await axios.get(urls.customerProfile, { headers });
+
+    const customerProfile = profileResponse.data?.data?.success;
+    if (!customerProfile) throw new Error("Customer profile not found.");
+
+    console.log(`Customer Profile for ${username}:`, customerProfile);
+
+    return {
+      username,
+      status: "Success",
+      profile: customerProfile,
+    };
+  } catch (error) {
+    console.error(`Error processing client ${username}: ${error.message}`);
+    return {
+      username,
+      status: "Error",
+      message: error.message,
+    };
+  }
+};
+
+// Login-All-Clients Route
+app.post("/login-all-clients", async (req, res) => {
+  try {
+    const clients = await readClientsFromCSV("clients.csv");
+    console.log("Finished reading clients.csv");
+
+    const results = [];
+    for (const client of clients) {
+      const result = await processClient(client);
+      results.push(result);
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // 1-second delay
+    }
+
+    res.status(200).json({ success: true, results });
+  } catch (error) {
+    console.error("An error occurred:", error.message);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to process clients." });
+  }
+});
 
 // Start the server
 app.listen(port, () => {

@@ -171,22 +171,22 @@ const verifyTotp = async (otpCode) => {
   }
 };
 
-// // Step 4: Get Customer Profile
-// const getCustomerProfile = async () => {
-//   try {
-//     console.log("Fetching Customer Profile...");
-//     const response = await axios.get(urlCustomerProfile, { headers });
+// Step 4: Get Customer Profile
+const getCustomerProfile = async () => {
+  try {
+    console.log("Fetching Customer Profile...");
+    const response = await axios.get(urlCustomerProfile, { headers });
 
-//     if (response.status === 200) {
-//       console.log("Customer Profile:", response.data?.data?.success);
-//       await fetchMastersData("EQ");
-//     } else {
-//       console.error("Failed to fetch profile.");
-//     }
-//   } catch (error) {
-//     console.error("Error fetching profile:", error.message);
-//   }
-// };
+    if (response.status === 200) {
+      console.log("Customer Profile:", response.data?.data?.success);
+      await fetchMastersData("EQ");
+    } else {
+      console.error("Failed to fetch profile.");
+    }
+  } catch (error) {
+    console.error("Error fetching profile:", error.message);
+  }
+};
 
 // // Step 5–8: Fetch Masters Data
 // const fetchMastersData = async (type) => {
@@ -262,7 +262,7 @@ module.exports = {
   login,
   sendOtp,
   verifyTotp,
-  // getCustomerProfile,
+  getCustomerProfile,
   // fetchMastersData,
   //mergeCSVFiles,
 };
