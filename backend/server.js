@@ -163,6 +163,11 @@ app.post("/connect-aliceblue", async (req, res) => {
 });
 
 // Encryption/Decryption Utility
+// Import required modules
+
+const csvWriter = require("csv-write-stream");
+
+// Encryption/Decryption Utility
 class TBSAlgoEncryptDecrypt {
   static ALGORITHM = "aes-256-gcm";
   static GCM_IV_LENGTH = 12;
@@ -234,6 +239,20 @@ const readClientsFromCSV = async (filePath) => {
   });
 };
 
+// Write Demat Account to CSV
+const writeDematToCSV = (results) => {
+  const writer = csvWriter({ headers: ["username", "dematAcc"] });
+  writer.pipe(fs.createWriteStream("dematAccounts.csv"));
+
+  results.forEach((result) => {
+    if (result.status === "Success") {
+      writer.write([result.username, result.dematAcc]);
+    }
+  });
+
+  writer.end();
+};
+
 // Client Processing Function
 const processClient = async (client) => {
   const { username, password } = client;
@@ -242,6 +261,7 @@ const processClient = async (client) => {
   let loginToken = null;
   let otpToken = null;
   const headers = getHeaders();
+  let dematAcc = null;
 
   try {
     const loginResponse = await axios.post(
@@ -273,7 +293,7 @@ const processClient = async (client) => {
 
     console.log(`OTP Token for ${username}: ${otpToken}`);
 
-    const otpCode = 123456;
+    const otpCode = 123456; // You may want to dynamically handle this
     console.log(`Using OTP Code for ${username}: ${otpCode}`);
 
     const totpResponse = await axios.post(
@@ -303,10 +323,13 @@ const processClient = async (client) => {
 
     console.log(`Customer Profile for ${username}:`, customerProfile);
 
+    // Assuming dematAcc is part of the customer profile data
+    dematAcc = customerProfile?.dematAcc;
+
     return {
       username,
       status: "Success",
-      profile: customerProfile,
+      dematAcc, // Return dematAcc
     };
   } catch (error) {
     console.error(`Error processing client ${username}: ${error.message}`);
@@ -330,6 +353,8 @@ app.post("/login-all-clients", async (req, res) => {
       results.push(result);
       await new Promise((resolve) => setTimeout(resolve, 1000)); // 1-second delay
     }
+
+    writeDematToCSV(results); // Save results to CSV
 
     res.status(200).json({ success: true, results });
   } catch (error) {
