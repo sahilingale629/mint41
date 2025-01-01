@@ -210,7 +210,7 @@ export default function Homepage() {
       );
 
       if (response.data.success) {
-        console.log("All clients logged in:", response.data.clients);
+        console.log("All clients logged in:", response.data);
         alert("All clients logged in successfully!");
       } else {
         console.error("Error:", response.data.error);

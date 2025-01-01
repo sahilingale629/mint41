@@ -11,6 +11,7 @@ const WebSocket = require("ws");
 const axios = require("axios");
 const csvParser = require("csv-parser");
 const crypto = require("crypto");
+const csv = require("csv-parser"); // Example for csv-parser
 
 const app = express();
 const port = 5007;
@@ -161,9 +162,6 @@ app.post("/connect-aliceblue", async (req, res) => {
     res.status(500).json({ error: "Failed to connect to AliceBlue WebSocket" });
   }
 });
-
-// Encryption/Decryption Utility
-// Import required modules
 
 const csvWriter = require("csv-write-stream");
 
@@ -363,6 +361,30 @@ app.post("/login-all-clients", async (req, res) => {
       .status(500)
       .json({ success: false, message: "Failed to process clients." });
   }
+});
+
+const filePath = path.join(__dirname, "dematAccounts.csv"); // Adjust the filename if necessary
+
+// Endpoint to check if the file is ready
+
+// Endpoint to fetch demat account data (username should be included)
+app.get("/api/demat-accounts", (req, res) => {
+  const clients = [];
+
+  fs.createReadStream(filePath) // Use the filePath from current directory
+    .pipe(csv())
+    .on("data", (row) => {
+      // Assuming the CSV has a column 'username'
+      clients.push({ username: row.username }); // Add the username to the array
+    })
+    .on("end", () => {
+      console.log(clients); // Print the clients array
+      res.json(clients); // Return the client data as JSON
+    })
+    .on("error", (error) => {
+      console.error(error);
+      res.status(500).send("Error reading CSV file");
+    });
 });
 
 // Start the server

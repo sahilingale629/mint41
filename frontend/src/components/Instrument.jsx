@@ -7,6 +7,7 @@ import {
 } from "../utils/payloadParser";
 import StockUI from "./StockUI";
 import Modal from "react-modal";
+import StockUISell from "./StockUISell";
 
 export default function Instrument({ instrument, payload }) {
   const [lastTradePrice, setLastTradePrice] = useState(0);
@@ -15,6 +16,7 @@ export default function Instrument({ instrument, payload }) {
   const [modalData, setModalData] = useState({ symbol: "", price: 0 });
   let subtitle;
   const [modalIsOpen, setIsOpen] = useState(false);
+  const [modal2IsOpen, setmodal2IsOpen] = useState(false);
 
   const symbol = instrument?.symbol;
 
@@ -48,6 +50,10 @@ export default function Instrument({ instrument, payload }) {
 
   function closeModal() {
     setIsOpen(false);
+  }
+
+  function closeModal2() {
+    setmodal2IsOpen(false);
   }
 
   // Handle Buy button click
@@ -134,7 +140,7 @@ export default function Instrument({ instrument, payload }) {
   const handleSell = (symbol, ltp) => {
     console.log(`Sell clicked for ${symbol} at price ${ltp}`);
     setOrderType("Sell");
-    setIsOpen(true); // Open the modal for the order details
+    setmodal2IsOpen(true); // Open the modal for the order details
 
     // Commented out sell logic for now
     /*
@@ -171,6 +177,13 @@ export default function Instrument({ instrument, payload }) {
           symbol={symbol}
           lastTradePrice={lastTradePrice}
           closeModal={closeModal}
+        />
+      </Modal>
+      <Modal isOpen={modal2IsOpen} onRequestClose={closeModal2}>
+        <StockUISell
+          symbol={symbol}
+          lastTradePrice={lastTradePrice}
+          closeModal2={closeModal2}
         />
       </Modal>
     </>

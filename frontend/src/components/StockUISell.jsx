@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
-import "./StockUI.css";
+import "./StockUISell.css";
 
 // Set the root element for the modal (important for accessibility)
 Modal.setAppElement("#root");
 
-export default function StockUI({ symbol, lastTradePrice, closeModal }) {
+export default function StockUISell({ symbol, lastTradePrice, closeModal2 }) {
   const [clients, setClients] = useState([]);
   const [exchange, setExchange] = useState("NSE");
   const [orderType, setOrderType] = useState("Intraday");
@@ -14,8 +14,7 @@ export default function StockUI({ symbol, lastTradePrice, closeModal }) {
   const [quantity, setQuantity] = useState(1);
   const [selectedClient, setSelectedClient] = useState(""); // State for selected client
 
-
- 
+  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   useEffect(() => {
     fetch("http://localhost:5007/api/demat-accounts")
@@ -110,8 +109,8 @@ export default function StockUI({ symbol, lastTradePrice, closeModal }) {
         <p>Required Margin: ₹1,177.20</p>
         <p>Charges: ₹3.78</p>
 
-        <button className="buy">Buy</button>
-        <button className="cancel" onClick={closeModal}>
+        <button className="buy">Sell</button>
+        <button className="cancel" onClick={closeModal2}>
           Cancel
         </button>
       </div>
