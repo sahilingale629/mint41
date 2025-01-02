@@ -4,7 +4,7 @@ const axios = require("axios");
 const data = JSON.stringify({
   clientcode: "S492372",
   password: "1228",
-  totp: "511819",
+  totp: "346456",
   // Add your TOTP code here
 });
 

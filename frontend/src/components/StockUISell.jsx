@@ -8,7 +8,8 @@ Modal.setAppElement("#root");
 export default function StockUISell({ symbol, lastTradePrice, closeModal2 }) {
   const [clients, setClients] = useState([]);
   const [exchange, setExchange] = useState("NSE");
-  const [orderType, setOrderType] = useState("Intraday");
+  const [orderType, setOrderType] = useState("Market");
+  const [productId, setProductId] = useState("Intraday");
   const [price, setPrice] = useState({ lastTradePrice });
   const [triggerPrice, setTriggerPrice] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -27,37 +28,60 @@ export default function StockUISell({ symbol, lastTradePrice, closeModal2 }) {
   }, []);
 
   return (
-    <div className="stock-ui">
-      <div className="header">
+    <div className="stockUISell">
+      <div className="sellHeader">
         <h1>{symbol}</h1>
         <div className="exchange-toggle"></div>
       </div>
 
-      <div className="tabs">
+      <div className="sellTabs">
         <button className="active-tab">Regular</button>
         <button>Bracket</button>
         <button>AMO</button>
       </div>
 
-      <div className="order-type">
-        <button
-          className={orderType === "Intraday" ? "active" : ""}
-          onClick={() => setOrderType("Intraday")}
-        >
-          Intraday MIS
-        </button>
-        <button
-          className={orderType === "Long Term" ? "active" : ""}
-          onClick={() => setOrderType("Long Term")}
-        >
-          Long Term CNC
-        </button>
-        <button
-          className={orderType === "Pay Later" ? "active" : ""}
-          onClick={() => setOrderType("Pay Later")}
-        >
-          Pay Later MTF
-        </button>
+      <div className="sellProductId-OrderType-Container">
+        <div className="productId">
+          <button
+            className={productId === "Intraday" ? "active" : ""}
+            onClick={() => setProductId("Intraday")}
+          >
+            Intraday
+          </button>
+          <button
+            className={productId === "Long Term" ? "active" : ""}
+            onClick={() => setProductId("Long Term")}
+          >
+            Delivery
+          </button>
+          <button
+            className={productId === "Pay Later" ? "active" : ""}
+            onClick={() => setProductId("Pay Later")}
+          >
+            MTF
+          </button>
+        </div>
+
+        <div className="sellOrderType">
+          <button
+            className={orderType === "Market" ? "active" : ""}
+            onClick={() => setOrderType("Market")}
+          >
+            Market
+          </button>
+          <button
+            className={orderType === "Limit" ? "active" : ""}
+            onClick={() => setOrderType("Limit")}
+          >
+            Limit
+          </button>
+          <button
+            className={orderType === "Stop Loss" ? "active" : ""}
+            onClick={() => setOrderType("Stop Loss")}
+          >
+            Stop Loss
+          </button>
+        </div>
       </div>
 
       <div className="price-section">
@@ -109,7 +133,7 @@ export default function StockUISell({ symbol, lastTradePrice, closeModal2 }) {
         <p>Required Margin: ₹1,177.20</p>
         <p>Charges: ₹3.78</p>
 
-        <button className="buy">Sell</button>
+        <button className="sell">Sell</button>
         <button className="cancel" onClick={closeModal2}>
           Cancel
         </button>

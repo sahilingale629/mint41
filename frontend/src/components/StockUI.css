@@ -8,7 +8,7 @@ body {
 .stock-ui {
   max-width: 500px;
   margin: 20px auto;
-  background-color: #ffffff;
+  background-color: #f5f5f5;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 20px;
@@ -25,7 +25,7 @@ body {
   font-size: 20px;
   margin: 0;
   color: #ffffff;
-  background-color: #4caf50;
+  background-color: #48c91d;
   padding: 10px 20px;
   border-radius: 4px;
 }
@@ -57,21 +57,26 @@ body {
   color: #333;
   cursor: pointer;
   border-bottom: 2px solid transparent;
+  color: #48c91d;
 }
 
 .tabs button.active-tab {
-  color: #4caf50;
-  border-bottom: 2px solid #4caf50;
+  color: #48c91d;
+  border-bottom: 2px solid #48c91d;
   font-weight: bold;
 }
+.productId-OrderType-Container {
+  display: flex;
+  gap: 50px;
+}
 
-.order-type {
+.productId {
   display: flex;
   justify-content: space-between;
   margin-bottom: 20px;
 }
 
-.order-type button {
+.buyProductId button {
   flex: 1;
   margin-right: 10px;
   padding: 10px;
@@ -82,13 +87,40 @@ body {
   border-radius: 4px;
 }
 
-.order-type button.active {
-  background-color: #4caf50;
+.buyProductId button.active {
+  background-color: #48c91d;
   color: #ffffff;
-  border: 1px solid #4caf50;
+  border: 1px solid #48c91d;
 }
 
-.order-type button:last-child {
+.productId button:last-child {
+  margin-right: 0;
+}
+
+.orderType {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.orderType button {
+  flex: 1;
+  margin-right: 10px;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  background-color: #f9f9f9;
+  color: #333;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.orderType button.active {
+  background-color: #48c91d;
+  color: #ffffff;
+  border: 1px solid #48c91d;
+}
+
+.orderType button:last-child {
   margin-right: 0;
 }
 
@@ -135,6 +167,7 @@ body {
 .footer p {
   font-size: 14px;
   margin: 0;
+  color: darkgrey;
 }
 
 .footer button {
@@ -151,7 +184,7 @@ body {
 }
 
 .footer .buy {
-  background-color: #4caf50;
+  background-color: #48c91d;
   color: #ffffff;
 }
 

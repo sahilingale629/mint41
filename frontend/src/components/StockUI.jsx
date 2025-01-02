@@ -8,14 +8,12 @@ Modal.setAppElement("#root");
 export default function StockUI({ symbol, lastTradePrice, closeModal }) {
   const [clients, setClients] = useState([]);
   const [exchange, setExchange] = useState("NSE");
-  const [orderType, setOrderType] = useState("Intraday");
+  const [orderType, setOrderType] = useState("Market");
+  const [productId, setProductId] = useState("Intraday");
   const [price, setPrice] = useState({ lastTradePrice });
   const [triggerPrice, setTriggerPrice] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [selectedClient, setSelectedClient] = useState(""); // State for selected client
-
-
- 
 
   useEffect(() => {
     fetch("http://localhost:5007/api/demat-accounts")
@@ -39,26 +37,48 @@ export default function StockUI({ symbol, lastTradePrice, closeModal }) {
         <button>Bracket</button>
         <button>AMO</button>
       </div>
+      <div className="productId-OrderType-Container">
+        <div className="buyProductId">
+          <button
+            className={productId === "Intraday" ? "active" : ""}
+            onClick={() => setProductId("Intraday")}
+          >
+            Intraday
+          </button>
+          <button
+            className={productId === "Long Term" ? "active" : ""}
+            onClick={() => setProductId("Long Term")}
+          >
+            Delivery
+          </button>
+          <button
+            className={productId === "Pay Later" ? "active" : ""}
+            onClick={() => setProductId("Pay Later")}
+          >
+            MTF
+          </button>
+        </div>
 
-      <div className="order-type">
-        <button
-          className={orderType === "Intraday" ? "active" : ""}
-          onClick={() => setOrderType("Intraday")}
-        >
-          Intraday MIS
-        </button>
-        <button
-          className={orderType === "Long Term" ? "active" : ""}
-          onClick={() => setOrderType("Long Term")}
-        >
-          Long Term CNC
-        </button>
-        <button
-          className={orderType === "Pay Later" ? "active" : ""}
-          onClick={() => setOrderType("Pay Later")}
-        >
-          Pay Later MTF
-        </button>
+        <div className="orderType">
+          <button
+            className={orderType === "Market" ? "active" : ""}
+            onClick={() => setOrderType("Market")}
+          >
+            Market
+          </button>
+          <button
+            className={orderType === "Limit" ? "active" : ""}
+            onClick={() => setOrderType("Limit")}
+          >
+            Limit
+          </button>
+          <button
+            className={orderType === "Stop Loss" ? "active" : ""}
+            onClick={() => setOrderType("Stop Loss")}
+          >
+            Stop Loss
+          </button>
+        </div>
       </div>
 
       <div className="price-section">

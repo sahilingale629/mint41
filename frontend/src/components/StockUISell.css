@@ -5,23 +5,23 @@ body {
   background-color: #f5f5f5;
 }
 
-.stock-ui {
+.stockUISell {
   max-width: 500px;
   margin: 20px auto;
-  background-color: #ffffff;
+  background-color: #f5f5f5;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 20px;
 }
 
-.header {
+.sellHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
 }
 
-.header h1 {
+.sellHeader h1 {
   font-size: 20px;
   margin: 0;
   color: #ffffff;
@@ -42,13 +42,13 @@ body {
   margin-right: 5px;
 }
 
-.tabs {
+.sellTabs {
   display: flex;
   margin-bottom: 20px;
   border-bottom: 1px solid #e0e0e0;
 }
 
-.tabs button {
+.sellTabs button {
   flex: 1;
   padding: 10px;
   border: none;
@@ -59,19 +59,23 @@ body {
   border-bottom: 2px solid transparent;
 }
 
-.tabs button.active-tab {
+.sellTabs button.active-tab {
   color: #f00;
   border-bottom: 2px solid #f00;
   font-weight: bold;
 }
+.sellProductId-OrderType-Container {
+  display: flex;
+  gap: 50px;
+}
 
-.order-type {
+.productId {
   display: flex;
   justify-content: space-between;
   margin-bottom: 20px;
 }
 
-.order-type button {
+.productId button {
   flex: 1;
   margin-right: 10px;
   padding: 10px;
@@ -82,13 +86,40 @@ body {
   border-radius: 4px;
 }
 
-.order-type button.active {
+.productId button.active {
   background-color: #f00;
   color: #ffffff;
   border: 1px solid #f00;
 }
 
-.order-type button:last-child {
+.productId button:last-child {
+  margin-right: 0;
+}
+
+.sellOrderType {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.sellOrderType button {
+  flex: 1;
+  margin-right: 10px;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  background-color: #f9f9f9;
+  color: #333;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.sellOrderType button.active {
+  background-color: #f00;
+  color: #ffffff;
+  border: 1px solid #f00;
+}
+
+.sellOrderType button:last-child {
   margin-right: 0;
 }
 
@@ -150,7 +181,7 @@ body {
   color: #ffffff;
 }
 
-.footer .buy {
+.footer .sell {
   background-color: #f00;
   color: #ffffff;
 }
