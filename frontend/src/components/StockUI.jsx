@@ -36,6 +36,23 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
     console.log("Quantity:", quantity);
     console.log("BUY or Sell :", buy);
     console.log("Selected Client:", selectedClient || "No client selected");
+    const selectedClientData = clients.find(
+      (client) => client.username === selectedClient
+    );
+
+    // Check if the client is found and if dematAcc exists
+    if (selectedClientData) {
+      if (selectedClientData.dematAcc) {
+        console.log(
+          "Demat Account of selected client:",
+          selectedClientData.dematAcc
+        );
+      } else {
+        console.log("Demat Account not available for this client.");
+      }
+    } else {
+      console.log("No valid client selected or client data not found.");
+    }
   };
 
   return (

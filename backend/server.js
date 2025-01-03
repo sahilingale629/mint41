@@ -375,7 +375,7 @@ app.get("/api/demat-accounts", (req, res) => {
     .pipe(csv())
     .on("data", (row) => {
       // Assuming the CSV has a column 'username'
-      clients.push({ username: row.username }); // Add the username to the array
+      clients.push({ username: row.username, dematAcc: row.dematAcc }); // Add the username to the array
     })
     .on("end", () => {
       console.log(clients); // Print the clients array
@@ -384,6 +384,33 @@ app.get("/api/demat-accounts", (req, res) => {
     .on("error", (error) => {
       console.error(error);
       res.status(500).send("Error reading CSV file");
+    });
+});
+
+app.get("/api/search-token", (req, res) => {
+  const { token } = req.query;
+  const results = [];
+
+  if (!token) {
+    return res.status(400).send({ error: "Token is required" });
+  }
+
+  fs.createReadStream("merged_output.csv")
+    .pipe(csvParser())
+    .on("data", (row) => {
+      if (row.token === token) {
+        results.push({ ex: row.ex, token: row.token });
+      }
+    })
+    .on("end", () => {
+      if (results.length > 0) {
+        res.json(results[0]); // Send the first match
+      } else {
+        res.status(404).send({ error: "Token not found" });
+      }
+    })
+    .on("error", (err) => {
+      res.status(500).send({ error: "Error reading CSV file", details: err });
     });
 });
 
