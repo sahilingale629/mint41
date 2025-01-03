@@ -5,15 +5,21 @@ import "./StockUISell.css";
 // Set the root element for the modal (important for accessibility)
 Modal.setAppElement("#root");
 
-export default function StockUISell({ symbol, lastTradePrice, closeModal2 }) {
+export default function StockUISell({
+  symbol,
+  lastTradePrice,
+  token,
+  closeModal2,
+}) {
   const [clients, setClients] = useState([]);
   const [exchange, setExchange] = useState("NSE");
-  const [orderType, setOrderType] = useState("Market");
+  const [orderType, setOrderType] = useState("MKT");
   const [productId, setProductId] = useState("Intraday");
   const [price, setPrice] = useState({ lastTradePrice });
   const [triggerPrice, setTriggerPrice] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [selectedClient, setSelectedClient] = useState(""); // State for selected client
+  const [sell, setSell] = useState("S");
 
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -26,6 +32,16 @@ export default function StockUISell({ symbol, lastTradePrice, closeModal2 }) {
       })
       .catch((error) => console.error("Error fetching clients:", error));
   }, []);
+  const handleSell = () => {
+    console.log("Token:", token);
+    console.log("Order Type:", orderType);
+    console.log("Product ID:", productId);
+    console.log("Price:", price);
+    console.log("Trigger Price:", triggerPrice);
+    console.log("Quantity:", quantity);
+    console.log("BUY or Sell :", sell);
+    console.log("Selected Client:", selectedClient || "No client selected");
+  };
 
   return (
     <div className="stockUISell">
@@ -49,14 +65,14 @@ export default function StockUISell({ symbol, lastTradePrice, closeModal2 }) {
             Intraday
           </button>
           <button
-            className={productId === "Long Term" ? "active" : ""}
-            onClick={() => setProductId("Long Term")}
+            className={productId === "Delivery" ? "active" : ""}
+            onClick={() => setProductId("Delivery")}
           >
             Delivery
           </button>
           <button
-            className={productId === "Pay Later" ? "active" : ""}
-            onClick={() => setProductId("Pay Later")}
+            className={productId === "MTF" ? "active" : ""}
+            onClick={() => setProductId("MTF")}
           >
             MTF
           </button>
@@ -64,20 +80,20 @@ export default function StockUISell({ symbol, lastTradePrice, closeModal2 }) {
 
         <div className="sellOrderType">
           <button
-            className={orderType === "Market" ? "active" : ""}
-            onClick={() => setOrderType("Market")}
+            className={orderType === "MKT" ? "active" : ""}
+            onClick={() => setOrderType("MKT")}
           >
             Market
           </button>
           <button
-            className={orderType === "Limit" ? "active" : ""}
-            onClick={() => setOrderType("Limit")}
+            className={orderType === "LIMIT" ? "active" : ""}
+            onClick={() => setOrderType("LIMIT")}
           >
             Limit
           </button>
           <button
-            className={orderType === "Stop Loss" ? "active" : ""}
-            onClick={() => setOrderType("Stop Loss")}
+            className={orderType === "SL" ? "active" : ""}
+            onClick={() => setOrderType("SL")}
           >
             Stop Loss
           </button>
@@ -133,7 +149,9 @@ export default function StockUISell({ symbol, lastTradePrice, closeModal2 }) {
         <p>Required Margin: ₹1,177.20</p>
         <p>Charges: ₹3.78</p>
 
-        <button className="sell">Sell</button>
+        <button className="sell" onClick={handleSell}>
+          Sell
+        </button>
         <button className="cancel" onClick={closeModal2}>
           Cancel
         </button>
