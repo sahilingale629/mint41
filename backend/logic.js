@@ -188,74 +188,74 @@ const getCustomerProfile = async () => {
   }
 };
 
-// // Step 5–8: Fetch Masters Data
-// const fetchMastersData = async (type) => {
-//   try {
-//     console.log(`Fetching Masters Data for ${type}...`);
-//     const response = await axios.get(urlsMasters[type], { headers });
+// Step 5–8: Fetch Masters Data
+const fetchMastersData = async (type) => {
+  try {
+    console.log(`Fetching Masters Data for ${type}...`);
+    const response = await axios.get(urlsMasters[type], { headers });
 
-//     if (response.status === 200) {
-//       const data = response.data?.data?.success;
-//       if (data) {
-//         const csv = parse(data);
-//         fs.writeFileSync(`${type.toLowerCase()}_output.csv`, csv);
-//         console.log(`${type} Data saved to ${type.toLowerCase()}_output.csv`);
+    if (response.status === 200) {
+      const data = response.data?.data?.success;
+      if (data) {
+        const csv = parse(data);
+        fs.writeFileSync(`${type.toLowerCase()}_output.csv`, csv);
+        console.log(`${type} Data saved to ${type.toLowerCase()}_output.csv`);
 
-//         // Proceed to next type
-//         const nextType =
-//           type === "EQ"
-//             ? "FNO"
-//             : type === "FNO"
-//             ? "CURR"
-//             : type === "CURR"
-//             ? "COMM"
-//             : null;
-//         if (nextType) await fetchMastersData(nextType);
-//         else {
-//           // Once all data is fetched, merge the CSV files
-//           await mergeCSVFiles();
-//         }
-//       } else {
-//         console.error(`${type} Data not found.`);
-//       }
-//     } else {
-//       console.error(`Failed to fetch ${type} data.`);
-//     }
-//   } catch (error) {
-//     console.error(`Error fetching ${type} data:`, error.message);
-//   }
-// };
+        // Proceed to next type
+        const nextType =
+          type === "EQ"
+            ? "FNO"
+            : type === "FNO"
+              ? "CURR"
+              : type === "CURR"
+                ? "COMM"
+                : null;
+        if (nextType) await fetchMastersData(nextType);
+        else {
+          // Once all data is fetched, merge the CSV files
+          await mergeCSVFiles();
+        }
+      } else {
+        console.error(`${type} Data not found.`);
+      }
+    } else {
+      console.error(`Failed to fetch ${type} data.`);
+    }
+  } catch (error) {
+    console.error(`Error fetching ${type} data:`, error.message);
+  }
+};
 
-// Step 9: Merge CSV Files
-// const mergeCSVFiles = async () => {
-//   try {
-//     const filePaths = [
-//       path.join(__dirname, "eq_output.csv"),
-//       path.join(__dirname, "fno_output.csv"),
-//       path.join(__dirname, "curr_output.csv"),
-//       path.join(__dirname, "comm_output.csv"),
-//     ];
+//Step 9: Merge CSV Files
+const mergeCSVFiles = async () => {
+  try {
+    const filePaths = [
+      path.join(__dirname, "eq_output.csv"),
+      path.join(__dirname, "fno_output.csv"),
+      path.join(__dirname, "curr_output.csv"),
+      path.join(__dirname, "comm_output.csv"),
+    ];
 
-//     const allData = [];
+    const allData = [];
 
-//     // Read and merge the CSV content
-//     for (let filePath of filePaths) {
-//       const fileData = fs.readFileSync(filePath, "utf8");
-//       const parsedData = fileData.split("\n").map((line) => line.split(","));
-//       if (allData.length === 0) {
-//         allData.push(parsedData[0]); // Add the header
-//       }
-//       allData.push(...parsedData.slice(1)); // Add the rows
-//     }
+    // Read and merge the CSV content
+    for (let filePath of filePaths) {
+      const fileData = fs.readFileSync(filePath, "utf8");
+      const parsedData = fileData.split("\n").map((line) => line.split(","));
+      if (allData.length === 0) {
+        allData.push(parsedData[0]); // Add the header
+      }
+      allData.push(...parsedData.slice(1)); // Add the rows
+    }
 
-//     // Convert merged data back to CSV format
-//     const mergedCsv = parse(allData);
-//     fs.writeFileSync("merged_output.csv", mergedCsv);
-//     console.log("Merged CSV saved to merged_output.csv");
-//   } catch (error) {
-//     console.error("Error merging CSV files:", error.message);
-//   }
-// };
+    // Convert merged data back to CSV format
+    const mergedCsv = parse(allData);
+    fs.writeFileSync("merged_output.csv", mergedCsv);
+    console.log("Merged CSV saved to merged_output.csv");
+  } catch (error) {
+    console.error("Error merging CSV files:", error.message);
+  }
+};
 
 // Export functions for use in other files
 module.exports = {
@@ -263,6 +263,6 @@ module.exports = {
   sendOtp,
   verifyTotp,
   getCustomerProfile,
-  // fetchMastersData,
-  //mergeCSVFiles,
+  fetchMastersData,
+  mergeCSVFiles,
 };

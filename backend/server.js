@@ -40,6 +40,82 @@ wss.on("connection", (ws) => {
   });
 });
 
+app.get("/download/merged_output", (req, res) => {
+  const filePath = path.resolve(__dirname, "merged_output.csv");
+
+  // Check if the file exists
+  if (!fs.existsSync(filePath)) {
+    console.error("File not found:", filePath);
+    return res.status(404).send("File not found.");
+  }
+
+  // Download the file
+  res.download(filePath, "merged_output", (err) => {
+    if (err) {
+      console.error("Error sending the file:", err);
+      res.status(500).send("Error downloading the file.");
+    }
+  });
+});
+
+app.post("/api/order", (req, res) => {
+  // Extract token from Authorization header
+  const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from the 'Bearer' header
+
+  // If no token is found, print a message
+  if (!token) {
+    console.log("No token received");
+    return res.status(400).json({ message: "Token is required" });
+  }
+  // Print the token to the console
+  console.log("Received token:", token);
+
+  // Process the order data (you can also access other fields from req.body)
+  const {
+    orderType,
+    productId,
+    price,
+    triggerPrice,
+    quantity,
+    buyOrSell,
+    selectedClient,
+  } = req.body;
+
+  console.log("Order details:", {
+    orderType,
+    productId,
+    price,
+    triggerPrice,
+    quantity,
+    buyOrSell,
+    selectedClient,
+  });
+
+  // Read the CSV file and search for the token
+  fs.createReadStream("merged_output.csv")
+    .pipe(csv())
+    .on("data", (row) => {
+
+      if (row.token.toString() === token) {
+        // If token is found, set exchange, segment, and Sid
+        const ex = row.shortCode || "NSE"; // Default to "NSE" if shortCode is not found
+        const segment = row.segment || "Equity"; // Default to "Equity" if segment is not found
+        const Sid = row.scripId || "12345"; // Default to "12345" if scripId is not found
+
+        // Send a response back with ex, segment, and Sid
+        return res.status(200).json({
+          message: "Order received successfully",
+          ex: ex,
+          segment: segment,
+          Sid: Sid,
+        });
+      }
+    })
+    .on("end", () => {
+      // If no token is found in the CSV
+
+    });
+});
 // POST route to handle login data
 app.post("/api/data", async (req, res) => {
   const { username, password } = req.body;
@@ -387,25 +463,66 @@ app.get("/api/demat-accounts", (req, res) => {
     });
 });
 
-app.get("/api/search-token", (req, res) => {
-  const { token } = req.query;
-  const results = [];
+function searchTokenInCSV(filePath, token) {
+  // Read the CSV file
+  fs.readFile(filePath, "utf8", (err, data) => {
+    if (err) {
+      console.error("Error reading file:", err);
+      return;
+    }
 
+    // Parse CSV content using PapaParse
+    Papa.parse(data, {
+      header: true, // Treat the first row as headers
+      dynamicTyping: true, // Automatically convert data types
+      complete: (result) => {
+        let foundRow = null;
+
+        // Loop through each row and search for the token
+        for (let row of result.data) {
+          for (let key in row) {
+            if (row[key] && row[key].toString().includes(token)) {
+              foundRow = row;
+              break;
+            }
+          }
+          if (foundRow) break;
+        }
+
+        if (foundRow) {
+          console.log("Found related row:", foundRow);
+        } else {
+          console.log("Token not found.");
+        }
+      },
+    });
+  });
+}
+
+app.get("/api/search-token", (req, res) => {
+  const token = req.query.token.toString();
+
+
+  console.log("Received token:", token); // Log the received token
   if (!token) {
     return res.status(400).send({ error: "Token is required" });
   }
 
+
+  const results = [];
   fs.createReadStream("merged_output.csv")
     .pipe(csvParser())
     .on("data", (row) => {
-      if (row.token === token) {
+      if (row.token.toString().trim() === token.trim()) {
+        console.log(row.token, token);
         results.push({ ex: row.ex, token: row.token });
       }
     })
     .on("end", () => {
       if (results.length > 0) {
-        res.json(results[0]); // Send the first match
+        res.json(results[0]);
       } else {
+
         res.status(404).send({ error: "Token not found" });
       }
     })
@@ -413,6 +530,7 @@ app.get("/api/search-token", (req, res) => {
       res.status(500).send({ error: "Error reading CSV file", details: err });
     });
 });
+
 
 // Start the server
 app.listen(port, () => {

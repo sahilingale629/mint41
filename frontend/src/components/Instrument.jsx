@@ -8,6 +8,7 @@ import {
 import StockUI from "./StockUI";
 import Modal from "react-modal";
 import StockUISell from "./StockUISell";
+import { saveAs } from "file-saver"; // Install this library with `npm install file-saver`
 
 export default function Instrument({ instrument, payload }) {
   const [lastTradePrice, setLastTradePrice] = useState(0);

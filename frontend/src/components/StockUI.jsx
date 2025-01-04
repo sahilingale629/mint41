@@ -15,6 +15,10 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
   const [quantity, setQuantity] = useState(1);
   const [selectedClient, setSelectedClient] = useState(""); // State for selected client
   const [buy, setBuy] = useState("B");
+  const [exTokenData, setExTokenData] = useState(null);
+  const [ex, setEx] = useState(null);
+  const [segment, setSegment] = useState(null);
+  const [Sid, setSid] = useState(null);
 
   useEffect(() => {
     fetch("http://localhost:5007/api/demat-accounts")
@@ -28,31 +32,50 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
 
   // Handler to log the required values
   const handleBuy = () => {
-    console.log("Token:", token);
-    console.log("Order Type:", orderType);
-    console.log("Product ID:", productId);
-    console.log("Price:", price);
-    console.log("Trigger Price:", triggerPrice);
-    console.log("Quantity:", quantity);
-    console.log("BUY or Sell :", buy);
-    console.log("Selected Client:", selectedClient || "No client selected");
-    const selectedClientData = clients.find(
-      (client) => client.username === selectedClient
-    );
+    // Prepare the requestData, including the token and other necessary fields
+    const requestData = {
+      token: token, // Send the token
+      orderType: orderType,
+      productId: productId,
+      price: price,
+      triggerPrice: triggerPrice,
+      quantity: quantity,
+      buyOrSell: buy,
+      selectedClient: selectedClient,
+    };
 
-    // Check if the client is found and if dematAcc exists
-    if (selectedClientData) {
-      if (selectedClientData.dematAcc) {
-        console.log(
-          "Demat Account of selected client:",
-          selectedClientData.dematAcc
-        );
-      } else {
-        console.log("Demat Account not available for this client.");
-      }
-    } else {
-      console.log("No valid client selected or client data not found.");
-    }
+    console.log("Sending data to backend:", requestData);
+
+    // Send the entire requestData to the backend using fetch
+    fetch("http://localhost:5007/api/order", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        // Optionally, you can send the token in the header if needed for authorization
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(requestData), // Send requestData as JSON
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Response from server:", data);
+
+        // Assuming the server returns ex, segment, and Sid
+        const { ex, segment, Sid } = data;
+
+        // Now, you can use these values in the frontend
+        console.log("Exchange:", ex);
+        console.log("Segment:", segment);
+        console.log("Sid:", Sid);
+
+        // Optionally, set them in the state if you want to display or use them later
+        setEx(ex);
+        setSegment(segment);
+        setSid(Sid);
+      })
+      .catch((error) => {
+        console.error("Error sending data to backend:", error);
+      });
   };
 
   return (
