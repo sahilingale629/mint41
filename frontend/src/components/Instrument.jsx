@@ -21,7 +21,7 @@ export default function Instrument({ instrument, payload }) {
 
   const symbol = instrument?.symbol;
   const token = instrument?.token;
-  console.log(`token passed from Instrument.jsx :- ${token}`);
+  // console.log(`token passed from Instrument.jsx :- ${token}`);
 
   // Set last traded price when payload changes
   useEffect(() => {
@@ -103,7 +103,7 @@ export default function Instrument({ instrument, payload }) {
       </tr>
 
       {/* Modal Component */}
-      <Modal isOpen={modalIsOpen} onRequestClose={closeModal}>
+      <Modal isOpen={modalIsOpen} onRequestClose={closeModal} key={`buy-${lastTradePrice}`} >
         <StockUI
           symbol={symbol}
           lastTradePrice={lastTradePrice}
@@ -111,7 +111,7 @@ export default function Instrument({ instrument, payload }) {
           closeModal={closeModal}
         />
       </Modal>
-      <Modal isOpen={modal2IsOpen} onRequestClose={closeModal2}>
+      <Modal isOpen={modal2IsOpen} onRequestClose={closeModal2} key={`sell-${lastTradePrice}`}>
         <StockUISell
           symbol={symbol}
           lastTradePrice={lastTradePrice}

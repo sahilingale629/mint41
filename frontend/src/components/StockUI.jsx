@@ -19,6 +19,7 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
   const [ex, setEx] = useState(null);
   const [segment, setSegment] = useState(null);
   const [Sid, setSid] = useState(null);
+  const [activeTab, setActiveTab] = useState("Regular"); // New state for active tab
 
   useEffect(() => {
     fetch("http://localhost:5007/api/demat-accounts")
@@ -29,6 +30,9 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
       })
       .catch((error) => console.error("Error fetching clients:", error));
   }, []);
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+  };
 
   // Handler to log the required values
   const handleBuy = () => {
@@ -61,12 +65,14 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
         console.log("Response from server:", data);
 
         // Assuming the server returns ex, segment, and Sid
-        const { ex, segment, Sid } = data;
+        const { ex, segment, Sid, isMTFApproved, isBKTAllowed } = data;
 
         // Now, you can use these values in the frontend
         console.log("Exchange:", ex);
         console.log("Segment:", segment);
         console.log("Sid:", Sid);
+        console.log('isMTFApproved:', isMTFApproved);
+        console.log('isBKTAllowed:', isBKTAllowed);
 
         // Optionally, set them in the state if you want to display or use them later
         setEx(ex);
@@ -76,6 +82,9 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
       .catch((error) => {
         console.error("Error sending data to backend:", error);
       });
+
+
+
   };
 
   return (
@@ -85,10 +94,26 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
         <div className="exchange-toggle"></div>
       </div>
 
+      {/* Tabs */}
       <div className="tabs">
-        <button className="active-tab">Regular</button>
-        <button>Bracket</button>
-        <button>AMO</button>
+        <button
+          className={activeTab === "Regular" ? "active-tab" : ""}
+          onClick={() => handleTabChange("Regular")}
+        >
+          Regular
+        </button>
+        <button
+          className={activeTab === "Bracket" ? "active-tab" : ""}
+          onClick={() => handleTabChange("Bracket")}
+        >
+          Bracket
+        </button>
+        <button
+          className={activeTab === "AMO" ? "active-tab" : ""}
+          onClick={() => handleTabChange("AMO")}
+        >
+          AMO
+        </button>
       </div>
       <div className="productId-OrderType-Container">
         <div className="buyProductId">
@@ -145,7 +170,7 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
         </div>
 
         <div className="input-group">
-          <label>LTP</label>
+          <label>Price</label>
           <input
             type="number"
             value={price}

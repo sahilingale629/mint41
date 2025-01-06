@@ -2,7 +2,7 @@ const ANGEL_ONE_API = {
   API_KEY: "TJKT1ves",
   CLIENT_CODE: "S492372",
   FEED_TYPE:
-    "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VybmFtZSI6IlM0OTIzNzIiLCJpYXQiOjE3MzU5OTA3ODQsImV4cCI6MTczNjA3NzE4NH0.894YdQnzDH_-hHor4qOhJeVRx23YItxMO_IwuBa4jbNz9IaVv-J8cznk8YWaviTT4JWTKJIsBSVEQ_GG4jMeQw",
+    "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VybmFtZSI6IlM0OTIzNzIiLCJpYXQiOjE3MzYxNDMwNzMsImV4cCI6MTczNjIyOTQ3M30.J4HP0wtfndhBMxM9RY2sBAIQBxC_LMNHmhgGjFKTkI1_efdqyUwg39VElqJz4pdi7GXVSjIL_lZVzzYGcMFW3A",
   FETCH_URL:
     "https://margincalculator.angelone.in/OpenAPI_File/files/OpenAPIScripMaster.json",
 };

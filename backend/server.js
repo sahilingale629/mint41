@@ -101,13 +101,20 @@ app.post("/api/order", (req, res) => {
         const ex = row.shortCode || "NSE"; // Default to "NSE" if shortCode is not found
         const segment = row.segment || "Equity"; // Default to "Equity" if segment is not found
         const Sid = row.scripId || "12345"; // Default to "12345" if scripId is not found
+        const isMTFApproved = row.isMTFApproved;
+        const isBKTAllowed = row.isBKTAllowed;
 
+
+
+        console.log(isMTFApproved);
         // Send a response back with ex, segment, and Sid
         return res.status(200).json({
           message: "Order received successfully",
           ex: ex,
           segment: segment,
           Sid: Sid,
+          isMTFApproved: isMTFApproved,
+          isBKTAllowed: isBKTAllowed
         });
       }
     })
@@ -195,49 +202,7 @@ app.get("/save-csv", async (req, res) => {
   }
 });
 
-app.post("/connect-aliceblue", async (req, res) => {
-  try {
-    // Replace these values with actual credentials
-    const web_socket = new WebSocketV2({
-      jwttoken:
-        "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VybmFtZSI6IlM0OTIzNzIiLCJyb2xlcyI6MCwidXNlcnR5cGUiOiJVU0VSIiwidG9rZW4iOiJleUpoYkdjaU9pSlNVekkxTmlJc0luUjVjQ0k2SWtwWFZDSjkuZXlKMWMyVnlYM1I1Y0dVaU9pSmpiR2xsYm5RaUxDSjBiMnRsYmw5MGVYQmxJam9pZEhKaFpHVmZZV05qWlhOelgzUnZhMlZ1SWl3aVoyMWZhV1FpT2pZc0luTnZkWEpqWlNJNklqTWlMQ0prWlhacFkyVmZhV1FpT2lKa056UTNOekprWXkwNU9EWXlMVE5tTlRjdFlURXdOQzB4T1RRMFlXTmhNbUkzTnpZaUxDSnJhV1FpT2lKMGNtRmtaVjlyWlhsZmRqRWlMQ0p2Ylc1bGJXRnVZV2RsY21sa0lqbzJMQ0p3Y205a2RXTjBjeUk2ZXlKa1pXMWhkQ0k2ZXlKemRHRjBkWE1pT2lKaFkzUnBkbVVpZlgwc0ltbHpjeUk2SW5SeVlXUmxYMnh2WjJsdVgzTmxjblpwWTJVaUxDSnpkV0lpT2lKVE5Ea3lNemN5SWl3aVpYaHdJam94TnpNMU1UQTVNemcyTENKdVltWWlPakUzTXpVd01qSTRNRFlzSW1saGRDSTZNVGN6TlRBeU1qZ3dOaXdpYW5ScElqb2lOalJqWmpJeVlUWXRNbVl3WWkwMFlXVmxMVGd5TmpNdFlqRXhOVEUyTjJWaE4yVmpJaXdpVkc5clpXNGlPaUlpZlEuQm5pNXZ4ODhkRTNkcy1HeUdwMExSOEpRVEhtTm5QRGVGVy1WLV9sampaZnY4bjhZOE9yT3BYOWpvdzZrRzFxT2hrYjVlSVFSbnJZVnhsQW5OTG1mYUtlVXUxdTlJcFc2Nm5rUDlkbmxPNjlRbnhTcUdkN0VXRE40bHZ6LWNidXg3WExBYmo1MW9BX1d3UE5SeURkZEdUeV81M0ljU01xTEowQmY4VXlaSWpVIiwiQVBJLUtFWSI6IlRKS1QxdmVzIiwiaWF0IjoxNzM1MDIyOTg2LCJleHAiOjE3MzUxMDkzODZ9.ujaD7I7fWhlDM_43LPGDBCC2k_A6LDoOfUapf-jT43bmY9r6gDmU1dpOIiIiuvfuNwvi_O3DHV_L8M3ubbwiTQ",
-      apikey: "x6CAIx2R",
-      clientcode: "S492372",
-      feedtype:
-        "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VybmFtZSI6IlM0OTIzNzIiLCJpYXQiOjE3MzUyMDA1MzEsImV4cCI6MTczNTI4NjkzMX0.P93SXCicD_fVpWflPYMe_-cgeZ44r3qRkBUGCuE9kGfbSd8io3S1mXdl9K_8XH8t8CyomlYRSyxTlnzPY8x96Q",
-    });
 
-    await web_socket.connect();
-    console.log("Connected to AliceBlue WebSocket");
-
-    const json_req = {
-      correlationID: "correlation_id",
-      action: 1,
-      mode: 1,
-      exchangeType: 1,
-      tokens: ["17818"], // Token ID for fetching data
-    };
-
-    web_socket.fetchData(json_req);
-    web_socket.on("tick", (data) => {
-      if (data && data.last_traded_price) {
-        data.last_traded_price = data.last_traded_price / 100;
-
-        console.log("Last Traded Price:", data.last_traded_price);
-
-        // Broadcast the price to all connected WebSocket clients
-        broadcastToClients(
-          JSON.stringify({ lastTradedPrice: data.last_traded_price })
-        );
-      }
-    });
-
-    res.status(200).json({ message: "Connected to AliceBlue WebSocket" });
-  } catch (error) {
-    console.error("Error connecting to AliceBlue WebSocket:", error.message);
-    res.status(500).json({ error: "Failed to connect to AliceBlue WebSocket" });
-  }
-});
 
 const csvWriter = require("csv-write-stream");
 
@@ -463,73 +428,8 @@ app.get("/api/demat-accounts", (req, res) => {
     });
 });
 
-function searchTokenInCSV(filePath, token) {
-  // Read the CSV file
-  fs.readFile(filePath, "utf8", (err, data) => {
-    if (err) {
-      console.error("Error reading file:", err);
-      return;
-    }
-
-    // Parse CSV content using PapaParse
-    Papa.parse(data, {
-      header: true, // Treat the first row as headers
-      dynamicTyping: true, // Automatically convert data types
-      complete: (result) => {
-        let foundRow = null;
-
-        // Loop through each row and search for the token
-        for (let row of result.data) {
-          for (let key in row) {
-            if (row[key] && row[key].toString().includes(token)) {
-              foundRow = row;
-              break;
-            }
-          }
-          if (foundRow) break;
-        }
-
-        if (foundRow) {
-          console.log("Found related row:", foundRow);
-        } else {
-          console.log("Token not found.");
-        }
-      },
-    });
-  });
-}
-
-app.get("/api/search-token", (req, res) => {
-  const token = req.query.token.toString();
 
 
-  console.log("Received token:", token); // Log the received token
-  if (!token) {
-    return res.status(400).send({ error: "Token is required" });
-  }
-
-
-  const results = [];
-  fs.createReadStream("merged_output.csv")
-    .pipe(csvParser())
-    .on("data", (row) => {
-      if (row.token.toString().trim() === token.trim()) {
-        console.log(row.token, token);
-        results.push({ ex: row.ex, token: row.token });
-      }
-    })
-    .on("end", () => {
-      if (results.length > 0) {
-        res.json(results[0]);
-      } else {
-
-        res.status(404).send({ error: "Token not found" });
-      }
-    })
-    .on("error", (err) => {
-      res.status(500).send({ error: "Error reading CSV file", details: err });
-    });
-});
 
 
 // Start the server
