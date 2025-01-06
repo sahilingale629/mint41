@@ -103,7 +103,7 @@ export default function Instrument({ instrument, payload }) {
       </tr>
 
       {/* Modal Component */}
-      <Modal isOpen={modalIsOpen} onRequestClose={closeModal} key={`buy-${lastTradePrice}`} >
+      <Modal isOpen={modalIsOpen} onRequestClose={closeModal}  >
         <StockUI
           symbol={symbol}
           lastTradePrice={lastTradePrice}
@@ -111,7 +111,7 @@ export default function Instrument({ instrument, payload }) {
           closeModal={closeModal}
         />
       </Modal>
-      <Modal isOpen={modal2IsOpen} onRequestClose={closeModal2} key={`sell-${lastTradePrice}`}>
+      <Modal isOpen={modal2IsOpen} onRequestClose={closeModal2} >
         <StockUISell
           symbol={symbol}
           lastTradePrice={lastTradePrice}
