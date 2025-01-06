@@ -20,6 +20,8 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
   const [segment, setSegment] = useState(null);
   const [Sid, setSid] = useState(null);
   const [activeTab, setActiveTab] = useState("Regular"); // New state for active tab
+  const [isTriggerDisabled, setIsTriggerDisabled] = useState(false);
+  const [isPriceDisabled, setIsPriceDisabled] = useState(false);
 
   useEffect(() => {
     fetch("http://localhost:5007/api/demat-accounts")
@@ -33,6 +35,67 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
+
+  useEffect(() => {
+    console.log("Active Tab:", activeTab);
+    console.log("Product ID:", productId);
+    console.log("Order Type:", orderType);
+
+
+
+    if (activeTab === "Regular" && productId === "Intraday" && orderType === "LIMIT") {
+      setIsTriggerDisabled(true);
+      setIsPriceDisabled(false);
+    }
+    if (activeTab === "Regular" && productId === "Intraday" && orderType === "MKT") {
+      setIsTriggerDisabled(true);
+      setIsPriceDisabled(true);
+    }
+
+    if (activeTab === "Regular" && productId === "Intraday" && orderType === "SL") {
+      setIsTriggerDisabled(false);
+      setIsPriceDisabled(false);
+    }
+
+    if (activeTab === "Regular" && productId === "Delivery" && orderType === "LIMIT") {
+      setIsTriggerDisabled(true);
+      setIsPriceDisabled(false);
+    }
+
+    if (activeTab === "Regular" && productId === "Delivery" && orderType === "MKT") {
+      setIsTriggerDisabled(true);
+      setIsPriceDisabled(true);
+    }
+
+    if (activeTab === "Regular" && productId === "Delivery" && orderType === "SL") {
+      setIsTriggerDisabled(false);
+      setIsPriceDisabled(false);
+    }
+
+
+    if (activeTab === "Regular" && productId === "MTF" && orderType === "LIMIT") {
+      setIsTriggerDisabled(true);
+      setIsPriceDisabled(false);
+    }
+
+    if (activeTab === "Regular" && productId === "MTF" && orderType === "MKT") {
+      setIsTriggerDisabled(true);
+      setIsPriceDisabled(true);
+    }
+
+    if (activeTab === "Regular" && productId === "MTF" && orderType === "SL") {
+      setIsTriggerDisabled(false);
+      setIsPriceDisabled(false);
+    }
+
+
+
+  }, [activeTab, productId, orderType]);
+
+
+
+
+
 
   // Handler to log the required values
   const handleBuy = () => {
@@ -124,8 +187,8 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
             Intraday
           </button>
           <button
-            className={productId === "DELIVERY" ? "active" : ""}
-            onClick={() => setProductId("DELIVERY")}
+            className={productId === "Delivery" ? "active" : ""}
+            onClick={() => setProductId("Delivery")}
           >
             Delivery
           </button>
@@ -174,7 +237,16 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
           <input
             type="number"
             value={price}
-            onChange={(e) => setPrice(e.target.value)}
+
+
+
+
+            onChange={(e) => {
+              if (!isPriceDisabled) {
+                setPrice(e.target.value);
+              }
+            }}
+            disabled={isPriceDisabled}
           />
         </div>
 
@@ -183,8 +255,14 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
           <input
             type="number"
             value={triggerPrice}
-            onChange={(e) => setTriggerPrice(e.target.value)}
+            onChange={(e) => {
+              if (!isTriggerDisabled) {
+                setTriggerPrice(e.target.value);
+              }
+            }}
+            disabled={isTriggerDisabled}
           />
+
         </div>
 
         {/* Dropdown for Select Clients */}
