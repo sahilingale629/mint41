@@ -58,19 +58,112 @@ app.get("/download/merged_output", (req, res) => {
   });
 });
 
-app.post("/api/order", (req, res) => {
-  // Extract token from Authorization header
+const headers = {
+  "request-info":
+    '{"rit":"123","cver":"1.0v","ch":"WEB","info":{},"reqts":"12345678","payload":[]}',
+  "x-api-key": "E6J9HA1BA31EJK90IK12KL80BBRRN590",
+  "Content-Type": "application/json",
+};
+
+const placeOrder = async () => {
+  try {
+    console.log("Placing Order...");
+
+    // Example order payload. You can replace with dynamic data based on Step 5 response.
+    const orderPayload = {
+      payload: [
+        {
+          requestStatus: "New",
+          ex: "NCM",
+          seg: "EQ",
+          sId: "42187",
+          tk: "547",
+          dpAccNo: "1207020000576586",
+          buySell: "B", // Buy or Sell - Modify as needed
+          qty: 1,
+          price: "0.00", // Market price
+          type: "MKT", // Market Order
+          disQty: 0,
+          tPrice: "0.00",
+          val: "GFD", // Good For Day
+          pId: "Delivery",
+          goalId: "",
+          orderId: "",
+          valDate: 0,
+          userId: "A0012",
+          productName: "",
+        },
+      ],
+    };
+
+    const orderResponse = await axios.post(
+      "https://uat-api-algo.tradebulls.in/ms-order-placement/push", // Update with actual order placement endpoint
+      orderPayload,
+      { headers }
+    );
+
+    if (orderResponse.status === 200) {
+      //console.log("Order placed successfully:", orderResponse.data);
+
+      await fetchOrderReport();
+    } else {
+      console.error(
+        "Failed to place order. Status Code:",
+        orderResponse.status
+      );
+    }
+  } catch (error) {
+    console.error("An error occurred while placing the order:", error.message);
+  }
+};
+
+const fetchOrderReport = async () => {
+  try {
+    console.log("Fetching Order Report...");
+
+    const response = await axios.get(
+      "https://uat-api-algo.tradebulls.in/ms-order-report/order/ps",
+      { headers }
+    );
+
+    if (response.status === 200) {
+      const orderReportData = response.data?.data?.success;
+
+      if (orderReportData) {
+        console.log("Order Report Data:", orderReportData);
+      } else {
+        console.error("No data found in Order Report response.");
+      }
+    } else {
+      console.error(
+        "Failed to fetch Order Report. Status Code:",
+        response.status
+      );
+    }
+  } catch (error) {
+    if (error.response) {
+      console.error("Error response:", error.response.data);
+      console.error("Status code:", error.response.status);
+    } else if (error.request) {
+      console.error("No response received:", error.request);
+    } else {
+      console.error("Error:", error.message);
+    }
+  }
+};
+
+
+
+app.post("/api/order", async (req, res) => {
   const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from the 'Bearer' header
 
-  // If no token is found, print a message
   if (!token) {
     console.log("No token received");
     return res.status(400).json({ message: "Token is required" });
   }
-  // Print the token to the console
+
   console.log("Received token:", token);
 
-  // Process the order data (you can also access other fields from req.body)
   const {
     orderType,
     productId,
@@ -91,38 +184,52 @@ app.post("/api/order", (req, res) => {
     selectedClient,
   });
 
-  // Read the CSV file and search for the token
-  fs.createReadStream("merged_output.csv")
-    .pipe(csv())
-    .on("data", (row) => {
+  let ex, segment, Sid, isMTFApproved, isBKTAllowed;
 
-      if (row.token.toString() === token) {
-        // If token is found, set exchange, segment, and Sid
-        const ex = row.shortCode || "NSE"; // Default to "NSE" if shortCode is not found
-        const segment = row.segment || "Equity"; // Default to "Equity" if segment is not found
-        const Sid = row.scripId || "12345"; // Default to "12345" if scripId is not found
-        const isMTFApproved = row.isMTFApproved;
-        const isBKTAllowed = row.isBKTAllowed;
+  // Search for the token in the CSV file
+  const csvReadPromise = new Promise((resolve, reject) => {
+    let found = false;
+    fs.createReadStream("merged_output.csv")
+      .pipe(csv())
+      .on("data", (row) => {
+        if (row.token.toString() === token) {
+          found = true;
+          ex = row.shortCode || "NSE";
+          segment = row.segment || "Equity";
+          Sid = row.scripId || "12345";
+          isMTFApproved = row.isMTFApproved;
+          isBKTAllowed = row.isBKTAllowed;
+          resolve();
+        }
+      })
+      .on("end", () => {
+        if (!found) reject(new Error("Token not found in CSV"));
+      })
+      .on("error", (error) => reject(error));
+  });
 
+  try {
+    await csvReadPromise;
 
+    // Call placeOrder and fetchOrderReport
+    await placeOrder();
+    await fetchOrderReport();
 
-        console.log(isMTFApproved);
-        // Send a response back with ex, segment, and Sid
-        return res.status(200).json({
-          message: "Order received successfully",
-          ex: ex,
-          segment: segment,
-          Sid: Sid,
-          isMTFApproved: isMTFApproved,
-          isBKTAllowed: isBKTAllowed
-        });
-      }
-    })
-    .on("end", () => {
-      // If no token is found in the CSV
-
+    // Send response back to the frontend
+    res.status(200).json({
+      message: "Order processed successfully",
+      ex,
+      segment,
+      Sid,
+      isMTFApproved,
+      isBKTAllowed,
     });
+  } catch (error) {
+    console.error("Error processing the order:", error.message);
+    res.status(500).json({ message: "Failed to process order", error: error.message });
+  }
 });
+
 // POST route to handle login data
 app.post("/api/data", async (req, res) => {
   const { username, password } = req.body;
