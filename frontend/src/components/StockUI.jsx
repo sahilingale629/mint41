@@ -22,6 +22,19 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
   const [activeTab, setActiveTab] = useState("Regular"); // New state for active tab
   const [isTriggerDisabled, setIsTriggerDisabled] = useState(false);
   const [isPriceDisabled, setIsPriceDisabled] = useState(false);
+  const [isDeliveryDisabled, setIsDeliveryDisabled] = useState(false);
+  const [isIntradayDisabled, setIsIntradayDisabled] = useState(false);
+  const [isMktDisabled, setIsMktDisabled] = useState(false);
+  const [isLimitDisabled, setIsLimitDisabled] = useState(false);
+  const [isSlDisabled, setIsSlDisabled] = useState(false);
+  const [isMtfDisabled, setIsMtfDisabled] = useState(false);
+
+
+
+  // New states for Bracket Order
+  const [target, setTarget] = useState("");
+  const [stopLoss, setStopLoss] = useState("");
+  const [trailingStopLoss, setTrailingStopLoss] = useState("");
 
   useEffect(() => {
     fetch("http://localhost:5007/api/demat-accounts")
@@ -32,76 +45,151 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
       })
       .catch((error) => console.error("Error fetching clients:", error));
   }, []);
+
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
 
+
   useEffect(() => {
-    console.log("Active Tab:", activeTab);
-    console.log("Product ID:", productId);
-    console.log("Order Type:", orderType);
+    // Reset state when activeTab changes
+    if (activeTab === "Regular") {
+      if (productId === 'Intraday') {
+        if (orderType === 'MKT') {
 
 
 
-    if (activeTab === "Regular" && productId === "Intraday" && orderType === "LIMIT") {
+          setIsTriggerDisabled(true);
+          setIsPriceDisabled(true);
+          setIsDeliveryDisabled(false);
+          setIsIntradayDisabled(false);
+          setIsMktDisabled(false);
+          setIsLimitDisabled(false);
+          setIsSlDisabled(false);
+          setIsMtfDisabled(false);
+        } else if (orderType === 'LIMIT') {
+          setIsTriggerDisabled(true);
+          setIsPriceDisabled(false);
+          setIsDeliveryDisabled(false);
+          setIsIntradayDisabled(false);
+          setIsMktDisabled(false);
+          setIsLimitDisabled(false);
+          setIsSlDisabled(false);
+          setIsMtfDisabled(false);
+
+        } else if (orderType === 'SL') {
+          setIsTriggerDisabled(false);
+          setIsPriceDisabled(false);
+          setIsDeliveryDisabled(false);
+          setIsIntradayDisabled(false);
+          setIsMktDisabled(false);
+          setIsLimitDisabled(false);
+          setIsSlDisabled(false);
+          setIsMtfDisabled(false);
+
+        }
+      }
+      else if (productId === 'Delivery') {
+        if (orderType === 'MKT') {
+          setIsTriggerDisabled(true);
+          setIsPriceDisabled(true);
+          setIsDeliveryDisabled(false);
+          setIsIntradayDisabled(false);
+          setIsMktDisabled(false);
+          setIsLimitDisabled(false);
+          setIsSlDisabled(false);
+          setIsMtfDisabled(false);
+
+        } else if (orderType === 'LIMIT') {
+          setIsTriggerDisabled(true);
+          setIsPriceDisabled(false);
+          setIsDeliveryDisabled(false);
+          setIsIntradayDisabled(false);
+          setIsMktDisabled(false);
+          setIsLimitDisabled(false);
+          setIsSlDisabled(false);
+          setIsMtfDisabled(false);
+
+        } else if (orderType === 'SL') {
+          setIsTriggerDisabled(false);
+          setIsPriceDisabled(false);
+          setIsDeliveryDisabled(false);
+          setIsIntradayDisabled(false);
+          setIsMktDisabled(false);
+          setIsLimitDisabled(false);
+          setIsSlDisabled(false);
+          setIsMtfDisabled(false);
+
+        }
+
+      }
+      else if (productId === 'MTF') {
+        if (orderType === 'MKT') {
+          setIsTriggerDisabled(true);
+          setIsPriceDisabled(true);
+          setIsDeliveryDisabled(false);
+          setIsIntradayDisabled(false);
+          setIsMktDisabled(false);
+          setIsLimitDisabled(false);
+          setIsSlDisabled(false);
+          setIsMtfDisabled(false);
+
+        } else if (orderType === 'LIMIT') {
+          setIsTriggerDisabled(true);
+          setIsPriceDisabled(false);
+          setIsDeliveryDisabled(false);
+          setIsIntradayDisabled(false);
+          setIsMktDisabled(false);
+          setIsLimitDisabled(false);
+          setIsSlDisabled(false);
+          setIsMtfDisabled(false);
+
+        } else if (orderType === 'SL') {
+          setIsTriggerDisabled(false);
+          setIsPriceDisabled(false);
+          setIsDeliveryDisabled(false);
+          setIsIntradayDisabled(false);
+          setIsMktDisabled(false);
+          setIsLimitDisabled(false);
+          setIsSlDisabled(false);
+          setIsMtfDisabled(false);
+
+        }
+      }
+    } else if (activeTab === "Bracket") {
+      setIsDeliveryDisabled(true);
+      setIsMtfDisabled(true);
+      setIsMktDisabled(true);
+      if (orderType === 'LIMIT') {
+        setIsTriggerDisabled(true);
+        setIsPriceDisabled(false);
+
+      }
+      else if (orderType === 'SL') {
+        setIsTriggerDisabled(false);
+        setIsPriceDisabled(false);
+
+      }
+    }
+
+
+
+    else if (activeTab === "AMO") {
+      setIsMktDisabled(true);
+      setIsSlDisabled(true);
       setIsTriggerDisabled(true);
-      setIsPriceDisabled(false);
+      setIsDeliveryDisabled(false);
+      setIsMtfDisabled(false);
+
+
+
     }
-    if (activeTab === "Regular" && productId === "Intraday" && orderType === "MKT") {
-      setIsTriggerDisabled(true);
-      setIsPriceDisabled(true);
-    }
-
-    if (activeTab === "Regular" && productId === "Intraday" && orderType === "SL") {
-      setIsTriggerDisabled(false);
-      setIsPriceDisabled(false);
-    }
-
-    if (activeTab === "Regular" && productId === "Delivery" && orderType === "LIMIT") {
-      setIsTriggerDisabled(true);
-      setIsPriceDisabled(false);
-    }
-
-    if (activeTab === "Regular" && productId === "Delivery" && orderType === "MKT") {
-      setIsTriggerDisabled(true);
-      setIsPriceDisabled(true);
-    }
-
-    if (activeTab === "Regular" && productId === "Delivery" && orderType === "SL") {
-      setIsTriggerDisabled(false);
-      setIsPriceDisabled(false);
-    }
-
-
-    if (activeTab === "Regular" && productId === "MTF" && orderType === "LIMIT") {
-      setIsTriggerDisabled(true);
-      setIsPriceDisabled(false);
-    }
-
-    if (activeTab === "Regular" && productId === "MTF" && orderType === "MKT") {
-      setIsTriggerDisabled(true);
-      setIsPriceDisabled(true);
-    }
-
-    if (activeTab === "Regular" && productId === "MTF" && orderType === "SL") {
-      setIsTriggerDisabled(false);
-      setIsPriceDisabled(false);
-    }
-
-
-
   }, [activeTab, productId, orderType]);
-
-
-
-
-
 
   // Handler to log the required values
   const handleBuy = () => {
-    // Prepare the requestData, including the token and other necessary fields
     const requestData = {
-      token: token, // Send the token
+      token: token,
       orderType: orderType,
       productId: productId,
       price: price,
@@ -109,35 +197,25 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
       quantity: quantity,
       buyOrSell: buy,
       selectedClient: selectedClient,
+      target: target, // Include target, stopLoss, and trailingStopLoss
+      stopLoss: stopLoss,
+      trailingStopLoss: trailingStopLoss,
     };
 
     console.log("Sending data to backend:", requestData);
 
-    // Send the entire requestData to the backend using fetch
     fetch("http://localhost:5007/api/order", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // Optionally, you can send the token in the header if needed for authorization
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(requestData), // Send requestData as JSON
+      body: JSON.stringify(requestData),
     })
       .then((response) => response.json())
       .then((data) => {
         console.log("Response from server:", data);
-
-        // Assuming the server returns ex, segment, and Sid
-        const { ex, segment, Sid, isMTFApproved, isBKTAllowed } = data;
-
-        // Now, you can use these values in the frontend
-        console.log("Exchange:", ex);
-        console.log("Segment:", segment);
-        console.log("Sid:", Sid);
-        console.log('isMTFApproved:', isMTFApproved);
-        console.log('isBKTAllowed:', isBKTAllowed);
-
-        // Optionally, set them in the state if you want to display or use them later
+        const { ex, segment, Sid } = data;
         setEx(ex);
         setSegment(segment);
         setSid(Sid);
@@ -145,9 +223,6 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
       .catch((error) => {
         console.error("Error sending data to backend:", error);
       });
-
-
-
   };
 
   return (
@@ -178,23 +253,27 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
           AMO
         </button>
       </div>
+
       <div className="productId-OrderType-Container">
         <div className="buyProductId">
           <button
             className={productId === "Intraday" ? "active" : ""}
             onClick={() => setProductId("Intraday")}
+            disabled={isIntradayDisabled}
           >
             Intraday
           </button>
           <button
             className={productId === "Delivery" ? "active" : ""}
             onClick={() => setProductId("Delivery")}
+            disabled={isDeliveryDisabled}
           >
             Delivery
           </button>
           <button
             className={productId === "MTF" ? "active" : ""}
             onClick={() => setProductId("MTF")}
+            disabled={isMtfDisabled}
           >
             MTF
           </button>
@@ -204,18 +283,24 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
           <button
             className={orderType === "MKT" ? "active" : ""}
             onClick={() => setOrderType("MKT")}
+            disabled={isMktDisabled}
           >
             Market
           </button>
           <button
             className={orderType === "LIMIT" ? "active" : ""}
             onClick={() => setOrderType("LIMIT")}
+            disabled={isLimitDisabled}
+
+
+
           >
             Limit
           </button>
           <button
             className={orderType === "SL" ? "active" : ""}
             onClick={() => setOrderType("SL")}
+            disabled={isSlDisabled}
           >
             Stop Loss
           </button>
@@ -223,6 +308,7 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
       </div>
 
       <div className="price-section">
+
         <div className="input-group">
           <label>Quantity</label>
           <input
@@ -237,10 +323,6 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
           <input
             type="number"
             value={price}
-
-
-
-
             onChange={(e) => {
               if (!isPriceDisabled) {
                 setPrice(e.target.value);
@@ -262,8 +344,11 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
             }}
             disabled={isTriggerDisabled}
           />
-
         </div>
+
+
+
+
 
         {/* Dropdown for Select Clients */}
         <div className="input-group">
@@ -281,6 +366,36 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
           </select>
         </div>
       </div>
+      {activeTab === "Bracket" && (
+        <div className="target-stoploss-section">
+          <div className="input-group">
+            <label>Target</label>
+            <input
+              type="number"
+              value={target}
+              onChange={(e) => setTarget(e.target.value)}
+            />
+          </div>
+
+          <div className="input-group">
+            <label>StopLoss</label>
+            <input
+              type="number"
+              value={stopLoss}
+              onChange={(e) => setStopLoss(e.target.value)}
+            />
+          </div>
+
+          <div className="input-group">
+            <label>Trailing StopLoss</label>
+            <input
+              type="number"
+              value={trailingStopLoss}
+              onChange={(e) => setTrailingStopLoss(e.target.value)}
+            />
+          </div>
+        </div>
+      )}
 
       <div className="footer">
         <p>Required Margin: ₹1,177.20</p>

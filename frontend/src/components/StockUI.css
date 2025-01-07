@@ -41,6 +41,32 @@ body {
 .exchange-toggle input {
   margin-right: 5px;
 }
+/* General styles for disabled buttons or tabs */
+button:disabled,
+button.disabled {
+  position: relative;
+  cursor: not-allowed;
+  opacity: 0.6; /* Slightly faded to indicate it's inactive */
+  background: repeating-linear-gradient(
+    45deg,
+    /* Angle of the lines */ rgba(0, 0, 0, 0.2),
+    /* Line color */ rgba(0, 0, 0, 0.2) 10px,
+    /* Line width */ transparent 10px,
+    /* Space between lines */ transparent 20px
+  );
+}
+
+/* Prevent any hover effects */
+button:disabled:hover,
+button.disabled:hover {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(0, 0, 0, 0.2),
+    rgba(0, 0, 0, 0.2) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+}
 
 .tabs {
   display: flex;
@@ -131,7 +157,7 @@ body {
 
 .input-group {
   display: flex;
-  flex-direction: column;
+
   flex: 1;
 }
 
@@ -158,10 +184,26 @@ body {
   margin-bottom: 10px;
 }
 
+/* Additional styling for Target, StopLoss, and Trailing StopLoss */
+.target-stoploss-section {
+  display: flex;
+  gap: 20px;
+}
+
+.target-stoploss-section .input-group {
+  flex: 1;
+}
+
+.target-stoploss-section .input-group input {
+  margin-top: 10px; /* Add margin for spacing between the new fields */
+  width: 120px;
+}
+
 .footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 15px;
 }
 
 .footer p {
