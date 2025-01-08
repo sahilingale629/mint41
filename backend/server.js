@@ -65,7 +65,7 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-const placeOrder = async (ex, seg, sId, tk, dpAccNo, buySell, qty, price, type, tPrice, pId, userId) => {
+const placeOrder = async (ex, seg, sId, tk, dpAccNo, buySell, qty, price, type, tPrice, pId, userId, decryptedAccessToken) => {
   try {
     console.log("Placing Order...");
     console.log("Placing Order...");
@@ -81,33 +81,35 @@ const placeOrder = async (ex, seg, sId, tk, dpAccNo, buySell, qty, price, type, 
     console.log('triggerPrice->', tPrice);
     console.log('Pid->', pId);
     console.log('userId->', userId);
+    console.log('decryptedAccessToken->', decryptedAccessToken);
 
     // Example order payload. You can replace with dynamic data based on Step 5 response.
     const orderPayload = {
       payload: [
         {
           requestStatus: "New",
-          ex: "NCM",
-          seg: "EQ",
-          sId: "42187",
-          tk: "547",
-          dpAccNo: "1207020000576586",
-          buySell: "B", // Buy or Sell - Modify as needed
-          qty: 1,
-          price: "0.00", // Market price
-          type: "MKT", // Market Order
+          ex: ex,
+          seg: seg,
+          sId: sId,
+          tk: tk,
+          dpAccNo: dpAccNo,
+          buySell: buySell, // Buy or Sell - Modify as needed
+          qty: qty,
+          price: price, // Market price
+          type: type, // Market Order
           disQty: 0,
-          tPrice: "0.00",
+          tPrice: tPrice,
           val: "GFD", // Good For Day
-          pId: "Delivery",
+          pId: pId,
           goalId: "",
           orderId: "",
           valDate: 0,
-          userId: "A0012",
+          userId: userId,
           productName: "",
         },
       ],
     };
+    headers.Authorization = `Bearer ${decryptedAccessToken}`
 
     const orderResponse = await axios.post(
       "https://uat-api-algo.tradebulls.in/ms-order-placement/push", // Update with actual order placement endpoint
@@ -116,7 +118,7 @@ const placeOrder = async (ex, seg, sId, tk, dpAccNo, buySell, qty, price, type, 
     );
 
     if (orderResponse.status === 200) {
-      //console.log("Order placed successfully:", orderResponse.data);
+      console.log("Order placed successfully:", orderResponse.data);
 
       await fetchOrderReport();
     } else {
@@ -268,7 +270,7 @@ app.post("/api/order", async (req, res) => {
     });
 
     // Call placeOrder and fetchOrderReport
-    await placeOrder(ex, segment, token, Sid, dematAcc, buyOrSell, quantity, price, orderType, triggerPrice, productId, selectedClient);
+    await placeOrder(ex, segment, token, Sid, dematAcc, buyOrSell, quantity, price, orderType, triggerPrice, productId, selectedClient, decryptedAccessToken);
     await fetchOrderReport();
 
     // Send response back to the frontend
