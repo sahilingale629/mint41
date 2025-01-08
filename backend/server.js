@@ -24,6 +24,30 @@ const wss = new WebSocket.Server({ port: 8080 }, () => {
 app.use(cors());
 app.use(express.json());
 
+function logPayloadWithTypes(payload) {
+  console.log("Logging Payload with Data Types:");
+
+  // If payload is an object
+  if (typeof payload === "object" && !Array.isArray(payload)) {
+    for (const [key, value] of Object.entries(payload)) {
+      console.log(`${key}: ${value} (type: ${typeof value})`);
+    }
+  }
+
+  // If payload is an array
+  else if (Array.isArray(payload)) {
+    payload.forEach((item, index) => {
+      console.log(`Item ${index}:`);
+      logPayloadWithTypes(item); // Recursive logging for nested objects
+    });
+  }
+
+  // If payload is a primitive value
+  else {
+    console.log(`Payload: ${payload} (type: ${typeof payload})`);
+  }
+}
+
 function broadcastToClients(message) {
   wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
@@ -65,7 +89,7 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-const placeOrder = async (ex, seg, sId, tk, dpAccNo, buySell, qty, price, type, tPrice, pId, userId, decryptedAccessToken, target, stopLoss, trailingStopLoss, activeTab) => {
+const placeOrder = async (ex, seg, tk, sId, dpAccNo, buySell, qty, price, type, tPrice, pId, userId, decryptedAccessToken, target, stopLoss, trailingStopLoss, activeTab) => {
   try {
     console.log("Placing Order...");
     console.log("Placing Order...");
@@ -89,7 +113,11 @@ const placeOrder = async (ex, seg, sId, tk, dpAccNo, buySell, qty, price, type, 
     // Example order payload. You can replace with dynamic data based on Step 5 response.
     let orderPayload = null;
     if (activeTab === 'Regular') {
-      if (type === 'MKT') { price = 0; }
+      if (type === 'MKT') {
+        price = "0.00";
+        console.log('price , type ->', price, type);
+
+      }
       orderPayload = {
         payload: [
           {
@@ -104,22 +132,46 @@ const placeOrder = async (ex, seg, sId, tk, dpAccNo, buySell, qty, price, type, 
             price: price, // Market price
             type: type, // Market Order
             disQty: 0,
-            tPrice: tPrice,
+            tPrice: "0.00",
             val: "GFD", // Good For Day
             pId: pId,
             goalId: "",
             orderId: "",
             valDate: 0,
-            userId: userId,
+            userId: "",
             productName: ""
 
 
           },
         ],
+
+        // payload: [
+        //   {
+        //     requestStatus: "New",
+        //     ex: "NCM",
+        //     seg: "EQ",
+        //     tk: "7",
+        //     sId: "39422",
+        //     dpAccNo: "1207020000576586",
+        //     buySell: "B", // Buy or Sell - Modify as needed
+        //     qty: 1,
+        //     price: "0.00", // Market price
+        //     type: "MKT", // Market Order
+        //     disQty: 0,
+        //     tPrice: "0.00",
+        //     val: "GFD", // Good For Day
+        //     pId: "Delivery",
+        //     goalId: "",
+        //     orderId: "",
+        //     valDate: 0,
+        //     userId: "",
+        //     productName: "",
+        //   },
+        // ],
       };
     }
     else if (activeTab === 'Bracket') {
-      if (type === 'MKT') { price = 0; }
+
       orderPayload = {
         payload: [
           {
@@ -140,7 +192,7 @@ const placeOrder = async (ex, seg, sId, tk, dpAccNo, buySell, qty, price, type, 
             goalId: "",
             orderId: "",
             valDate: 0,
-            userId: userId,
+            userId: "",
             productName: "",
             triggerOrderPrice: stopLoss,
             targetPrice: target
@@ -151,7 +203,7 @@ const placeOrder = async (ex, seg, sId, tk, dpAccNo, buySell, qty, price, type, 
       };
     }
     else {
-      if (type === 'MKT') { price = 0; }
+
       orderPayload = {
 
         payload: [
@@ -173,15 +225,18 @@ const placeOrder = async (ex, seg, sId, tk, dpAccNo, buySell, qty, price, type, 
             goalId: "",
             orderId: "",
             valDate: 0,
-            userId: userId,
+            userId: "",
             productName: "",
 
           },
         ],
       };
     }
-
-    headers.Authorization = `Bearer ${decryptedAccessToken}`
+    //headers["Authorization"] = "Bearer 1fda53d0-8e62-48c6-a544-f59f717d5d58"
+    headers['Authorization'] = `Bearer ${decryptedAccessToken}`
+    console.log('headers --> ', headers);
+    console.log('order payload --> ', orderPayload);
+    logPayloadWithTypes(orderPayload);
 
     const orderResponse = await axios.post(
       "https://uat-api-algo.tradebulls.in/ms-order-placement/push", // Update with actual order placement endpoint
