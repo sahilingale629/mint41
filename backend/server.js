@@ -65,7 +65,7 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-const placeOrder = async (ex, seg, sId, tk, dpAccNo, buySell, qty, price, type, tPrice, pId, userId, decryptedAccessToken) => {
+const placeOrder = async (ex, seg, sId, tk, dpAccNo, buySell, qty, price, type, tPrice, pId, userId, decryptedAccessToken, target, stopLoss, trailingStopLoss, activeTab) => {
   try {
     console.log("Placing Order...");
     console.log("Placing Order...");
@@ -82,33 +82,105 @@ const placeOrder = async (ex, seg, sId, tk, dpAccNo, buySell, qty, price, type, 
     console.log('Pid->', pId);
     console.log('userId->', userId);
     console.log('decryptedAccessToken->', decryptedAccessToken);
-
+    console.log('target', target);
+    console.log('stopLoss', stopLoss);
+    console.log('Trailing StopLoss', trailingStopLoss);
+    console.log('ActiveTab ->', activeTab);
     // Example order payload. You can replace with dynamic data based on Step 5 response.
-    const orderPayload = {
-      payload: [
-        {
-          requestStatus: "New",
-          ex: ex,
-          seg: seg,
-          sId: sId,
-          tk: tk,
-          dpAccNo: dpAccNo,
-          buySell: buySell, // Buy or Sell - Modify as needed
-          qty: qty,
-          price: price, // Market price
-          type: type, // Market Order
-          disQty: 0,
-          tPrice: tPrice,
-          val: "GFD", // Good For Day
-          pId: pId,
-          goalId: "",
-          orderId: "",
-          valDate: 0,
-          userId: userId,
-          productName: "",
-        },
-      ],
-    };
+    let orderPayload = null;
+    if (activeTab === 'Regular') {
+      if (type === 'MKT') { price = 0; }
+      orderPayload = {
+        payload: [
+          {
+            requestStatus: "New",
+            ex: ex,
+            seg: seg,
+            sId: sId,
+            tk: tk,
+            dpAccNo: dpAccNo,
+            buySell: buySell, // Buy or Sell - Modify as needed
+            qty: qty,
+            price: price, // Market price
+            type: type, // Market Order
+            disQty: 0,
+            tPrice: tPrice,
+            val: "GFD", // Good For Day
+            pId: pId,
+            goalId: "",
+            orderId: "",
+            valDate: 0,
+            userId: userId,
+            productName: ""
+
+
+          },
+        ],
+      };
+    }
+    else if (activeTab === 'Bracket') {
+      if (type === 'MKT') { price = 0; }
+      orderPayload = {
+        payload: [
+          {
+            requestStatus: "New",
+            ex: ex,
+            seg: seg,
+            sId: sId,
+            tk: tk,
+            dpAccNo: dpAccNo,
+            buySell: buySell, // Buy or Sell - Modify as needed
+            qty: qty,
+            price: price, // Market price
+            type: type, // Market Order
+            disQty: 0,
+            tPrice: tPrice,
+            val: "GFD", // Good For Day
+            pId: pId,
+            goalId: "",
+            orderId: "",
+            valDate: 0,
+            userId: userId,
+            productName: "",
+            triggerOrderPrice: stopLoss,
+            targetPrice: target
+
+
+          },
+        ],
+      };
+    }
+    else {
+      if (type === 'MKT') { price = 0; }
+      orderPayload = {
+
+        payload: [
+          {
+            requestStatus: "New",
+            ex: ex,
+            seg: seg,
+            sId: sId,
+            tk: tk,
+            dpAccNo: dpAccNo,
+            buySell: buySell, // Buy or Sell - Modify as needed
+            qty: qty,
+            price: price, // Market price
+            type: type, // Market Order
+            disQty: 0,
+            tPrice: tPrice,
+            val: "GFD", // Good For Day
+            pId: pId,
+            goalId: "",
+            orderId: "",
+            valDate: 0,
+            userId: userId,
+            productName: "",
+
+          },
+        ],
+      };
+    }
+
     headers.Authorization = `Bearer ${decryptedAccessToken}`
 
     const orderResponse = await axios.post(
@@ -187,6 +259,10 @@ app.post("/api/order", async (req, res) => {
     quantity,
     buyOrSell,
     selectedClient,
+    target,
+    stopLoss,
+    trailingStopLoss,
+    activeTab
   } = req.body;
 
   console.log("Order details:", {
@@ -197,6 +273,9 @@ app.post("/api/order", async (req, res) => {
     quantity,
     buyOrSell,
     selectedClient,
+    target,
+    trailingStopLoss,
+    activeTab
   });
 
   let ex, segment, Sid, isMTFApproved, isBKTAllowed;
@@ -270,7 +349,7 @@ app.post("/api/order", async (req, res) => {
     });
 
     // Call placeOrder and fetchOrderReport
-    await placeOrder(ex, segment, token, Sid, dematAcc, buyOrSell, quantity, price, orderType, triggerPrice, productId, selectedClient, decryptedAccessToken);
+    await placeOrder(ex, segment, token, Sid, dematAcc, buyOrSell, quantity, price, orderType, triggerPrice, productId, selectedClient, decryptedAccessToken, target, stopLoss, trailingStopLoss, activeTab);
     await fetchOrderReport();
 
     // Send response back to the frontend

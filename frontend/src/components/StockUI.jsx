@@ -10,7 +10,7 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
   const [exchange, setExchange] = useState("NSE");
   const [orderType, setOrderType] = useState("MKT");
   const [productId, setProductId] = useState("Intraday");
-  const [price, setPrice] = useState(lastTradePrice);
+  const [price, setPrice] = useState({ lastTradePrice });
   const [triggerPrice, setTriggerPrice] = useState("0");
   const [quantity, setQuantity] = useState(1);
   const [selectedClient, setSelectedClient] = useState(""); // State for selected client
@@ -58,7 +58,7 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
         if (orderType === 'MKT') {
 
 
-
+          setPrice(0);
           setIsTriggerDisabled(true);
           setIsPriceDisabled(true);
           setIsDeliveryDisabled(false);
@@ -91,6 +91,7 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
       }
       else if (productId === 'Delivery') {
         if (orderType === 'MKT') {
+          setPrice(0);
           setIsTriggerDisabled(true);
           setIsPriceDisabled(true);
           setIsDeliveryDisabled(false);
@@ -99,6 +100,7 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
           setIsLimitDisabled(false);
           setIsSlDisabled(false);
           setIsMtfDisabled(false);
+
 
         } else if (orderType === 'LIMIT') {
           setIsTriggerDisabled(true);
@@ -125,6 +127,7 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
       }
       else if (productId === 'MTF') {
         if (orderType === 'MKT') {
+          setPrice(0);
           setIsTriggerDisabled(true);
           setIsPriceDisabled(true);
           setIsDeliveryDisabled(false);
@@ -200,6 +203,7 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
       target: target, // Include target, stopLoss, and trailingStopLoss
       stopLoss: stopLoss,
       trailingStopLoss: trailingStopLoss,
+      activeTab: activeTab,
     };
 
     console.log("Sending data to backend:", requestData);
@@ -322,7 +326,7 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
           <label>Price</label>
           <input
             type="number"
-            value={price}
+            value={lastTradePrice}
             onChange={(e) => {
               if (!isPriceDisabled) {
                 setPrice(e.target.value);
