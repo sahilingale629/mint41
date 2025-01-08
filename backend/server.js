@@ -65,9 +65,22 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-const placeOrder = async () => {
+const placeOrder = async (ex, seg, sId, tk, dpAccNo, buySell, qty, price, type, tPrice, pId, userId) => {
   try {
     console.log("Placing Order...");
+    console.log("Placing Order...");
+    console.log('ex ->', ex);
+    console.log('seg ->', seg);
+    console.log('sId->', sId);
+    console.log('tk->', tk);
+    console.log('dpAccNo->', dpAccNo);
+    console.log('BuySell->', buySell);
+    console.log('qty->', qty);
+    console.log('price->', price);
+    console.log('type->', type);
+    console.log('triggerPrice->', tPrice);
+    console.log('Pid->', pId);
+    console.log('userId->', userId);
 
     // Example order payload. You can replace with dynamic data based on Step 5 response.
     const orderPayload = {
@@ -185,34 +198,77 @@ app.post("/api/order", async (req, res) => {
   });
 
   let ex, segment, Sid, isMTFApproved, isBKTAllowed;
+  let dematAcc, decryptedAccessToken;
 
   // Search for the token in the CSV file
-  const csvReadPromise = new Promise((resolve, reject) => {
-    let found = false;
-    fs.createReadStream("merged_output.csv")
-      .pipe(csv())
-      .on("data", (row) => {
-        if (row.token.toString() === token) {
-          found = true;
-          ex = row.shortCode || "NSE";
-          segment = row.segment || "Equity";
-          Sid = row.scripId || "12345";
-          isMTFApproved = row.isMTFApproved;
-          isBKTAllowed = row.isBKTAllowed;
-          resolve();
-        }
-      })
-      .on("end", () => {
-        if (!found) reject(new Error("Token not found in CSV"));
-      })
-      .on("error", (error) => reject(error));
-  });
+  const searchTokenInCSV = () =>
+    new Promise((resolve, reject) => {
+      let found = false;
+      fs.createReadStream("merged_output.csv")
+        .pipe(csv())
+        .on("data", (row) => {
+          if (row.token.toString() === token) {
+            found = true;
+            ex = row.shortCode || "NSE";
+            segment = row.segment || "Equity";
+            Sid = row.scripId || "12345";
+            isMTFApproved = row.isMTFApproved;
+            isBKTAllowed = row.isBKTAllowed;
+            resolve();
+          }
+        })
+        .on("end", () => {
+          if (!found) reject(new Error("Token not found in merged_output.csv"));
+        })
+        .on("error", (error) => reject(error));
+    });
+
+  // Function to search for dematAcc and decryptedAccessToken in `dematAccounts.csv`
+  const searchClientDetailsInCSV = () =>
+    new Promise((resolve, reject) => {
+      let found = false;
+      fs.createReadStream("dematAccounts.csv")
+        .pipe(csv())
+        .on("data", (row) => {
+          if (row.username && row.username.toString() === selectedClient) {
+            found = true;
+            dematAcc = row.dematAcc || "N/A";
+            decryptedAccessToken = row.decryptedAccessToken || "N/A";
+            resolve();
+          }
+        })
+        .on("end", () => {
+          if (!found) reject(new Error("Client not found in dematAccounts.csv"));
+        })
+        .on("error", (error) => reject(error));
+    });
 
   try {
-    await csvReadPromise;
+    // Search for the token in `merged_output.csv`
+    await searchTokenInCSV();
+
+    // Search for client details in `dematAccounts.csv`
+    await searchClientDetailsInCSV();
+
+    console.log("Order details after CSV search:", {
+      orderType,
+      productId,
+      price,
+      triggerPrice,
+      quantity,
+      buyOrSell,
+      selectedClient,
+      dematAcc,
+      decryptedAccessToken,
+      ex,
+      segment,
+      Sid,
+      isMTFApproved,
+      isBKTAllowed,
+    });
 
     // Call placeOrder and fetchOrderReport
-    await placeOrder();
+    await placeOrder(ex, segment, token, Sid, dematAcc, buyOrSell, quantity, price, orderType, triggerPrice, productId, selectedClient);
     await fetchOrderReport();
 
     // Send response back to the frontend
@@ -223,6 +279,8 @@ app.post("/api/order", async (req, res) => {
       Sid,
       isMTFApproved,
       isBKTAllowed,
+      dematAcc,
+      decryptedAccessToken,
     });
   } catch (error) {
     console.error("Error processing the order:", error.message);
@@ -385,14 +443,13 @@ const readClientsFromCSV = async (filePath) => {
   });
 };
 
-// Write Demat Account to CSV
 const writeDematToCSV = (results) => {
-  const writer = csvWriter({ headers: ["username", "dematAcc"] });
+  const writer = csvWriter({ headers: ["username", "dematAcc", "decryptedAccessToken"] });
   writer.pipe(fs.createWriteStream("dematAccounts.csv"));
 
   results.forEach((result) => {
     if (result.status === "Success") {
-      writer.write([result.username, result.dematAcc]);
+      writer.write([result.username, result.dematAcc, result.decryptedAccessToken]);
     }
   });
 
@@ -408,6 +465,7 @@ const processClient = async (client) => {
   let otpToken = null;
   const headers = getHeaders();
   let dematAcc = null;
+  let decryptedAccessToken = null;
 
   try {
     const loginResponse = await axios.post(
@@ -456,7 +514,7 @@ const processClient = async (client) => {
       `Encrypted Access Token for ${username}: ${encryptedAccessToken}`
     );
 
-    const decryptedAccessToken = TBSAlgoEncryptDecrypt.gcmDecrypt(
+    decryptedAccessToken = TBSAlgoEncryptDecrypt.gcmDecrypt(
       encryptedAccessToken,
       secretKey
     );
@@ -476,6 +534,7 @@ const processClient = async (client) => {
       username,
       status: "Success",
       dematAcc, // Return dematAcc
+      decryptedAccessToken, // Return decrypted access token
     };
   } catch (error) {
     console.error(`Error processing client ${username}: ${error.message}`);
@@ -486,6 +545,7 @@ const processClient = async (client) => {
     };
   }
 };
+
 
 // Login-All-Clients Route
 app.post("/login-all-clients", async (req, res) => {

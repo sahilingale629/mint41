@@ -11,7 +11,7 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
   const [orderType, setOrderType] = useState("MKT");
   const [productId, setProductId] = useState("Intraday");
   const [price, setPrice] = useState(lastTradePrice);
-  const [triggerPrice, setTriggerPrice] = useState("");
+  const [triggerPrice, setTriggerPrice] = useState("0");
   const [quantity, setQuantity] = useState(1);
   const [selectedClient, setSelectedClient] = useState(""); // State for selected client
   const [buy, setBuy] = useState("B");
