@@ -63,7 +63,7 @@ export default function StockUISell({
     if (activeTab === "Regular") {
       if (productId === 'Intraday') {
         if (orderType === 'MKT') {
-          setPrice(0);
+
 
 
 
@@ -203,7 +203,7 @@ export default function StockUISell({
       token: token,
       orderType: orderType,
       productId: productId,
-      price: price,
+      price: lastTradePrice,
       triggerPrice: triggerPrice,
       quantity: quantity,
       buyOrSell: sell,

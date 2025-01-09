@@ -18,6 +18,7 @@ export default function Instrument({ instrument, payload }) {
   let subtitle;
   const [modalIsOpen, setIsOpen] = useState(false);
   const [modal2IsOpen, setmodal2IsOpen] = useState(false);
+  const [staticLastTradePrice, setStaticLastTradePrice] = useState(0);
 
   const symbol = instrument?.symbol;
   const token = instrument?.token;
@@ -63,6 +64,7 @@ export default function Instrument({ instrument, payload }) {
   const handleBuy = (symbol, ltp) => {
     console.log(`Buy clicked for ${symbol} at price ${ltp}`);
     setOrderType("Buy");
+    setStaticLastTradePrice(ltp); // Store the static lastTradePrice
     setModalData({ symbol, price: lastTradePrice });
     setIsOpen(true); // Open the modal for the order details
   };
@@ -71,6 +73,8 @@ export default function Instrument({ instrument, payload }) {
   const handleSell = (symbol, ltp) => {
     console.log(`Sell clicked for ${symbol} at price ${ltp}`);
     setOrderType("Sell");
+    setStaticLastTradePrice(ltp); // Store the static lastTradePrice
+    setModalData({ symbol, price: lastTradePrice });
     setmodal2IsOpen(true); // Open the modal for the order details
 
     // Commented out sell logic for now
@@ -106,7 +110,7 @@ export default function Instrument({ instrument, payload }) {
       <Modal isOpen={modalIsOpen} onRequestClose={closeModal}  >
         <StockUI
           symbol={symbol}
-          lastTradePrice={lastTradePrice}
+          lastTradePrice={staticLastTradePrice}
           token={token}
           closeModal={closeModal}
         />
@@ -114,7 +118,7 @@ export default function Instrument({ instrument, payload }) {
       <Modal isOpen={modal2IsOpen} onRequestClose={closeModal2} >
         <StockUISell
           symbol={symbol}
-          lastTradePrice={lastTradePrice}
+          lastTradePrice={staticLastTradePrice}
           token={token}
           closeModal2={closeModal2}
         />

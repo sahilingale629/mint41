@@ -10,7 +10,8 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
   const [exchange, setExchange] = useState("NSE");
   const [orderType, setOrderType] = useState("MKT");
   const [productId, setProductId] = useState("Intraday");
-  const [price, setPrice] = useState({ lastTradePrice });
+  const staticLastTP = lastTradePrice;
+  const [price, setPrice] = useState(`${staticLastTP}`);
   const [triggerPrice, setTriggerPrice] = useState("0");
   const [quantity, setQuantity] = useState(1);
   const [selectedClient, setSelectedClient] = useState(""); // State for selected client
@@ -58,7 +59,7 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
         if (orderType === 'MKT') {
 
 
-          setPrice(0);
+
           setIsTriggerDisabled(true);
           setIsPriceDisabled(true);
           setIsDeliveryDisabled(false);
@@ -91,7 +92,7 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
       }
       else if (productId === 'Delivery') {
         if (orderType === 'MKT') {
-          setPrice(0);
+
           setIsTriggerDisabled(true);
           setIsPriceDisabled(true);
           setIsDeliveryDisabled(false);
@@ -127,7 +128,7 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
       }
       else if (productId === 'MTF') {
         if (orderType === 'MKT') {
-          setPrice(0);
+
           setIsTriggerDisabled(true);
           setIsPriceDisabled(true);
           setIsDeliveryDisabled(false);
@@ -189,13 +190,14 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
     }
   }, [activeTab, productId, orderType]);
 
+
   // Handler to log the required values
   const handleBuy = () => {
     const requestData = {
       token: token,
       orderType: orderType,
       productId: productId,
-      price: price,
+      price: lastTradePrice,
       triggerPrice: triggerPrice,
       quantity: quantity,
       buyOrSell: buy,
@@ -326,15 +328,16 @@ export default function StockUI({ symbol, lastTradePrice, token, closeModal }) {
           <label>Price</label>
           <input
             type="number"
-            value={lastTradePrice}
+            value={isPriceDisabled ? 0 : price}  // Show 0 if disabled, else show the price
             onChange={(e) => {
               if (!isPriceDisabled) {
-                setPrice(e.target.value);
+                setPrice(e.target.value);  // Allow editing when not disabled
               }
             }}
-            disabled={isPriceDisabled}
+            disabled={isPriceDisabled}  // Disable the input field if isPriceDisabled is true
           />
         </div>
+
 
         <div className="input-group">
           <label>Trigger Price</label>
